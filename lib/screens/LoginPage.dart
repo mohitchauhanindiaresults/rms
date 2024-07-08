@@ -1,4 +1,5 @@
   import 'dart:convert';
+import 'dart:io';
   
   import 'package:dio/dio.dart';
   import 'package:flutter/cupertino.dart';
@@ -32,177 +33,183 @@
   
     @override
     Widget build(BuildContext context) {
-      return Scaffold(
-        body: Stack(
-          children: [
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage('assets/images/backgroundlogin.png'), // Replace with your background image
-                  fit: BoxFit.cover,
+      return WillPopScope(
+
+        onWillPop: () async {
+          exit(0);
+        },
+        child: Scaffold(
+          body: Stack(
+            children: [
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: AssetImage('assets/images/backgroundlogin.png'), // Replace with your background image
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
-            ),
-            Container(
-              width: double.infinity,
-              height: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.white.withOpacity(0.5), // Adjust the opacity and colors as needed
-                    Color(0xFF191B2F).withOpacity(0.3), // Adjust the opacity and colors as needed
-                    Color(0xFF191B2F).withOpacity(0.9), // Adjust the opacity and colors as needed
-                  ],
-                ),
-              ),
-            ),
-            Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Column(
-                    children: [
-                      Image.asset(
-                        'assets/images/loginicon.png',
-                        height: 150,
-                        width: 150,
-                      ),
-                      SizedBox(height: 10),
-                      Text(
-                        'Login',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 25    ,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'Gilroy',
-                        ),
-                      ),
+              Container(
+                width: double.infinity,
+                height: double.infinity,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.5), // Adjust the opacity and colors as needed
+                      Color(0xFF191B2F).withOpacity(0.3), // Adjust the opacity and colors as needed
+                      Color(0xFF191B2F).withOpacity(0.9), // Adjust the opacity and colors as needed
                     ],
                   ),
-                  SizedBox(height: 30),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10), // Adjust horizontal margin as needed
-                    child: Container(
-                      height: 57,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8), // Adjust corner radius as needed
-                        color: Colors.white,
-                        border: Border.all(color: Colors.white),  // Makes the border white
-  
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white.withOpacity(0.3),
-                            Colors.white.withOpacity(0.3),
-                          ],
+                ),
+              ),
+              Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Column(
+                      children: [
+                        Image.asset(
+                          'assets/images/loginicon.png',
+                          height: 150,
+                          width: 150,
+                        ),
+                        SizedBox(height: 10),
+                        Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 25    ,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'Gilroy',
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 30),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10), // Adjust horizontal margin as needed
+                      child: Container(
+                        height: 57,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8), // Adjust corner radius as needed
+                          color: Colors.white,
+                          border: Border.all(color: Colors.white),  // Makes the border white
+
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withOpacity(0.3),
+                              Colors.white.withOpacity(0.3),
+                            ],
+                          ),
+                        ),
+                        child: TextField(
+                          controller: email,
+                          cursorColor: Colors.white,
+
+                          style: TextStyle(color: Colors.white,fontFamily: 'Gilroy'),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: Colors.transparent,
+                            hintText: 'Your email',
+
+                            hintStyle: TextStyle(color: Colors.white,fontFamily: 'Gilroy'
+                            ),
+                            border: InputBorder.none,
+                          ),
                         ),
                       ),
-                      child: TextField(
-                        controller: email,
-                        cursorColor: Colors.white,
-  
-                        style: TextStyle(color: Colors.white,fontFamily: 'Gilroy'),
+                    ),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10), // Adjust horizontal margin as needed
+                      child: Container(
+                        height: 57,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8), // Adjust corner radius as needed
+                          color: Colors.white,
+                          border: Border.all(color: Colors.white),  // Makes the border white
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.white.withOpacity(0.3),
+                              Colors.white.withOpacity(0.3),
+                            ],
+                          ),
+                        ),
+
+                     child:  TextFormField(
+                       controller: password,
+                      cursorColor: Colors.white,
+                        style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: Colors.transparent,
-                          hintText: 'Your email',
-  
-                          hintStyle: TextStyle(color: Colors.white,fontFamily: 'Gilroy'
-                          ),
+                          hintText: 'Password',
+                          hintStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
                           border: InputBorder.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10), // Adjust horizontal margin as needed
-                    child: Container(
-                      height: 57,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(8), // Adjust corner radius as needed
-                        color: Colors.white,
-                        border: Border.all(color: Colors.white),  // Makes the border white
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.white.withOpacity(0.3),
-                            Colors.white.withOpacity(0.3),
-                          ],
-                        ),
-                      ),
-  
-                   child:  TextFormField(
-                     controller: password,
-                    cursorColor: Colors.white,
-                      style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        hintText: 'Password',
-                        hintStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
-                        border: InputBorder.none,
-                        suffixIcon: IconButton(
-                          icon: Icon(
-                            _obscureText ? Icons.visibility_off : Icons.visibility,
-                            color: Colors.white,
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureText ? Icons.visibility_off : Icons.visibility,
+                              color: Colors.white,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscureText = !_obscureText;
+                              });
+                            },
                           ),
-                          onPressed: () {
-                            setState(() {
-                              _obscureText = !_obscureText;
-                            });
-                          },
                         ),
+                        obscureText: _obscureText,
                       ),
-                      obscureText: _obscureText,
+
                     ),
-  
-                  ),
-                  ),
-                  SizedBox(height: 20),
-  
-                  SizedBox(height: 40),
-                  Container(
-                    height: 50,
-                    width: 150,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        if(email.text.isEmpty){
-                          Utils.showAlertDialogError(context, "Alert", "Email Cannot be empty");
-                        }else if(password.text.isEmpty){
-                          Utils.showAlertDialogError(context, "Alert", "Password Cannot be empty");
-                        }else {
-                          loginAPI(context);
-                        }
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Color(Tint.Pink),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(25),
+                    ),
+                    SizedBox(height: 20),
+
+                    SizedBox(height: 40),
+                    Container(
+                      height: 50,
+                      width: 150,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if(email.text.isEmpty){
+                            Utils.showAlertDialogError(context, "Alert", "Email Cannot be empty");
+                          }else if(password.text.isEmpty){
+                            Utils.showAlertDialogError(context, "Alert", "Password Cannot be empty");
+                          }else {
+                            loginAPI(context);
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Color(Tint.Pink),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(25),
+                          ),
+                          padding: EdgeInsets.symmetric(vertical: 10.0),
                         ),
-                        padding: EdgeInsets.symmetric(vertical: 10.0),
-                      ),
-                      child: Text(
-                        'Login',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                          fontFamily: 'Gilroy'
+                        child: Text(
+                          'Login',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontFamily: 'Gilroy'
+                          ),
                         ),
                       ),
                     ),
-                  ),
-  
-                ],
+
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       );
     }

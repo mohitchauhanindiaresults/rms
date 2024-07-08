@@ -3,9 +3,11 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rms/screens/AlibonTableStatus.dart';
+import 'package:rms/screens/AssignTable.dart';
 import 'package:rms/screens/Billing.dart';
 import 'package:rms/screens/LoginPage.dart';
 import 'package:rms/screens/ReservationList.dart';
@@ -33,7 +35,8 @@ class _ReservationPageState extends State<ReservationPage> {
   TextEditingController _numberOfPersonController = TextEditingController();
   String _selectedDiscount = "Select Discounts"; // Or any other valid discount
   TextEditingController sourceController = TextEditingController();
-
+  TextEditingController referance = TextEditingController();
+  bool referenceVisiblity=false;
   @override
   void initState() {
     // TODO: implement initState
@@ -102,7 +105,7 @@ class _ReservationPageState extends State<ReservationPage> {
                 leading: Icon(Icons.table_bar),
                 title: Text('Assign Table'),
                 onTap: () {
-                  // Handle assign table tap
+                  Utils.navigateToPage(context, AssignTable());
                 },
               ),
               ListTile(
@@ -114,7 +117,7 @@ class _ReservationPageState extends State<ReservationPage> {
               ),
               ListTile(
                 leading: Icon(Icons.table_restaurant_outlined),
-                title: Text('Albion Table Status'),
+                title: Text('Alibon Table Status'),
                 onTap: () {
                   Utils.navigateToPage(context, AlibonTableStatus());
                 },
@@ -139,7 +142,7 @@ class _ReservationPageState extends State<ReservationPage> {
                 leading: Icon(Icons.logout_rounded),
                 title: Text('Logout'),
                 onTap: () {
-                  Utils.saveStringToPrefs(Constant.ISLOGINFORFIRSTTIME, "true");
+                  Utils.saveStringToPrefs(Constant.ISLOGINFORFIRSTTIME, "false");
 
                   Utils.navigateToPage(context, LoginPage());
                 },
@@ -185,7 +188,11 @@ class _ReservationPageState extends State<ReservationPage> {
                     SizedBox(height: 20),
                     _buildReservationTypeSelector(),
                     SizedBox(height: 20),
-                    _buildTextField(_mobileNumberController, 'Mobile Number'),
+                    Visibility(
+                        visible: referenceVisiblity,
+                        child: _buildReferanceDropdown()),
+                    SizedBox(height: 20),
+                    _buildMobileField(_mobileNumberController, 'Mobile Number'),
                     SizedBox(height: 20),
                     _buildTextField(_firstNameController, 'First Name'),
                     SizedBox(height: 20),
@@ -193,7 +200,7 @@ class _ReservationPageState extends State<ReservationPage> {
                     SizedBox(height: 20),
                     _buildTimeDatePicker(),
                     SizedBox(height: 20),
-                    _buildTextField(_numberOfPersonController, 'No. of Person'),
+                    _buildMobileField(_numberOfPersonController, 'No. of Person'),
                     SizedBox(height: 20),
                     _buildDiscountDropdown(),
                     SizedBox(height: 20),
@@ -239,11 +246,11 @@ class _ReservationPageState extends State<ReservationPage> {
             flex: 10,
             child: RadioListTile(
               title: Text(
-                'Albion',
+                'Alibon',
                 style: TextStyle(
                     color: Colors.white, fontFamily: 'Gilroy', fontSize: 14),
               ),
-              value: 'Albion',
+              value: 'Alibon',
               groupValue: _selectedLocation,
               onChanged: (value) {
                 setState(() {
@@ -280,6 +287,8 @@ class _ReservationPageState extends State<ReservationPage> {
               onChanged: (value) {
                 setState(() {
                   _reservationType = value!;
+                  referenceVisiblity=false;
+
                 });
               },
               activeColor: Colors.white,
@@ -292,13 +301,14 @@ class _ReservationPageState extends State<ReservationPage> {
                 'Pre-Reservation',
                 style: TextStyle(
                     color: Colors.white, fontFamily: 'Gilroy', fontSize: 14),
-                overflow: TextOverflow.ellipsis,
+              ///\  overflow: TextOverflow.ellipsis,
               ),
               value: 'Pre Reservation',
               groupValue: _reservationType,
               onChanged: (value) {
                 setState(() {
                   _reservationType = value!;
+                  referenceVisiblity=true;
                 });
               },
               activeColor: Colors.white,
@@ -319,6 +329,30 @@ class _ReservationPageState extends State<ReservationPage> {
       ),
       child: TextField(
         controller: controller,
+
+        cursorColor: Colors.white,
+        style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.transparent,
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+          border: InputBorder.none,
+        ),
+      ),
+    );
+  }
+  Widget _buildMobileField(TextEditingController controller, String hintText) {
+    return Container(
+      height: 57,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.white.withOpacity(0.3),
+        border: Border.all(color: Colors.white),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
         cursorColor: Colors.white,
         style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
         decoration: InputDecoration(
@@ -403,15 +437,14 @@ class _ReservationPageState extends State<ReservationPage> {
               DateTime? pickedDate = await showDatePicker(
                 context: context,
                 initialDate: DateTime.now(),
-                firstDate: DateTime(2000),
+                firstDate: DateTime.now(),
                 lastDate: DateTime(2101),
                 builder: (BuildContext context, Widget? child) {
                   return Theme(
                     data: ThemeData.light().copyWith(
                       primaryColor: Color(0xFFeb3254),
                       backgroundColor: Color(0xFFeb3254),
-                      colorScheme:
-                          ColorScheme.light(primary: Color(0xFFeb3254)),
+                      colorScheme: ColorScheme.light(primary: Color(0xFFeb3254)),
                       buttonTheme: ButtonThemeData(
                         textTheme: ButtonTextTheme.primary,
                       ),
@@ -421,10 +454,19 @@ class _ReservationPageState extends State<ReservationPage> {
                 },
               );
               if (pickedDate != null) {
-                setState(() {
-                  _dateController.text =
-                      "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
-                });
+                final now = DateTime.now();
+                final today = DateTime(now.year, now.month, now.day);
+
+                if (pickedDate.isBefore(today)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please select a future date')),
+                  );
+                } else {
+                  setState(() {
+                    _dateController.text =
+                    "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+                  });
+                }
               }
             },
             child: Container(
@@ -443,14 +485,15 @@ class _ReservationPageState extends State<ReservationPage> {
                     child: TextField(
                       controller: _dateController,
                       cursorColor: Color(0xFFeb3254),
-                      style:
-                          TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+                      style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
                       decoration: InputDecoration(
                         filled: true,
                         fillColor: Colors.transparent,
                         hintText: 'Date',
                         hintStyle: TextStyle(
-                            color: Colors.white, fontFamily: 'Gilroy'),
+                          color: Colors.white,
+                          fontFamily: 'Gilroy',
+                        ),
                         border: InputBorder.none,
                       ),
                       readOnly: true,
@@ -461,6 +504,7 @@ class _ReservationPageState extends State<ReservationPage> {
             ),
           ),
         ),
+
       ],
     );
   }
@@ -509,6 +553,50 @@ class _ReservationPageState extends State<ReservationPage> {
       ),
     );
   }
+  Widget _buildReferanceDropdown() {
+    return DropdownButtonFormField<String>(
+      style: TextStyle(color: Colors.pink, fontFamily: 'Gilroy'),
+      value: referance.text.isNotEmpty ? referance.text : null,
+      onChanged: (String? value) {
+        setState(() {
+          referance.text = value!;
+        });
+      },
+      items: [
+        'Pranav Sir',
+        'Pallavi Maam',
+        'Sagar Sir',
+        'Saadgi Maam',
+        'Sumit Sir ',
+        'Rashi Maam',
+        'Mohit Sir',
+        'Vikas',
+        'Zomato',
+        'Dineout',
+        'Other'
+      ].map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      }).toList(),
+      decoration: InputDecoration(
+        labelText: 'Select Reference',
+        labelStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+        filled: true,
+        fillColor: Colors.white.withOpacity(0.3),
+        contentPadding: EdgeInsets.symmetric(vertical: 13.0, horizontal: 10.0),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Colors.white),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8.0),
+          borderSide: BorderSide(color: Colors.white),
+        ),
+      ),
+    );
+  }
   Widget _buildBookNowButton() {
     return Center(
       child: Container(
@@ -519,9 +607,18 @@ class _ReservationPageState extends State<ReservationPage> {
             if (_dateController.text.isEmpty) {
               Utils.showAlertDialogError(
                   context, "Alert", "Date Cannot be empty");
+            } else if (_reservationType == null || _reservationType.isEmpty) {
+              Utils.showAlertDialogError(
+                  context, "Alert", "Reservation Type Cannot be empty");
+            } else if (_selectedLocation == null || _selectedLocation.isEmpty) {
+              Utils.showAlertDialogError(
+                  context, "Alert", "Table Location Cannot be empty");
             } else if (_mobileNumberController.text.isEmpty) {
               Utils.showAlertDialogError(
                   context, "Alert", "Mobile Number Cannot be empty");
+            }  else if (_mobileNumberController.text.length!=10) {
+              Utils.showAlertDialogError(
+                  context, "Alert", "Mobile Number is not valid");
             } else if (_firstNameController.text.isEmpty) {
               Utils.showAlertDialogError(
                   context, "Alert", "First Name Cannot be empty");
@@ -534,12 +631,6 @@ class _ReservationPageState extends State<ReservationPage> {
             } else if (_numberOfPersonController.text.isEmpty) {
               Utils.showAlertDialogError(
                   context, "Alert", "Number of Persons Cannot be empty");
-            } else if (_reservationType == null || _reservationType.isEmpty) {
-              Utils.showAlertDialogError(
-                  context, "Alert", "Reservation Type Cannot be empty");
-            } else if (_selectedLocation == null || _selectedLocation.isEmpty) {
-              Utils.showAlertDialogError(
-                  context, "Alert", "Table Location Cannot be empty");
             } else if (sourceController.text == null ||
                 sourceController.text.isEmpty) {
               Utils.showAlertDialogError(
@@ -587,6 +678,7 @@ class _ReservationPageState extends State<ReservationPage> {
         },
       );
 
+
       final Dio dio = Dio();
       final data = {
         "user_id": email,
@@ -600,7 +692,7 @@ class _ReservationPageState extends State<ReservationPage> {
         "type": _reservationType,
         "table_location": _selectedLocation,
         "discount": sourceController.text,
-        "reference": "N/A",
+        "reference": referance.text,
       };
 
       final response = await dio.post(
@@ -637,5 +729,7 @@ class _ReservationPageState extends State<ReservationPage> {
   Future<void> initiate() async {
     email = (await Utils.getStringFromPrefs(Constant.user_id))!;
     password = (await Utils.getStringFromPrefs(Constant.api_token))!;
+    print(email+"check1");
+    print(password);
   }
 }

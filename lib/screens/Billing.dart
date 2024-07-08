@@ -1,19 +1,43 @@
 import 'package:flutter/material.dart';
-import 'package:rms/utils/Tint.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
+import '../utils/Utils.dart';
 
+class Billing extends StatefulWidget {
+  @override
+  _BillingState createState() => _BillingState();
+}
 
-class Billing extends StatelessWidget {
+class _BillingState extends State<Billing> {
   final TextEditingController dateController = TextEditingController();
+  final TextEditingController billNumberController = TextEditingController();
+  final TextEditingController billAmountController = TextEditingController();
+
+  String reservationNumber = '';
+  String customerName = '';
+  String customerPhone = '';
+  String reservationDate = '';
+  String reservationTime = '';
+  String discount = '';
+  String reference = '';
+  String tableInfo = '';
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    dateController.text=Utils.getCurrentFormattedDate();
+    _fetchBillDetails();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bill Settlement',style: TextStyle(fontFamily: 'Gilroy',fontSize: 20,color: Colors.white),),
-        backgroundColor: Color(Tint.Pink),
+        title: Text('Bill Settlement', style: TextStyle(fontFamily: 'Gilroy', fontSize: 20, color: Colors.white)),
+        backgroundColor: Color(0xFFC62828),
         iconTheme: IconThemeData(
-          color: Colors.white, // Change the icon color here
+          color: Colors.white,
         ),
       ),
       body: Stack(
@@ -36,10 +60,9 @@ class Billing extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  //   Colors.white.withOpacity(0.5),
                   Color(0xFF191B2F).withOpacity(0.7),
-              Color(0xFF191B2F).withOpacity(0.7),
-              ],
+                  Color(0xFF191B2F).withOpacity(0.7),
+                ],
               ),
             ),
           ),
@@ -50,21 +73,9 @@ class Billing extends StatelessWidget {
                 children: [
                   _buildDateSearch(),
                   SizedBox(height: 10),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _buildInfoBox('Yard', '125'),
-                      _buildInfoBox('Total', '125'),
-                    ],
-                  ),
-                  SizedBox(height: 10),
                   _buildReservationDetails(),
                   SizedBox(height: 10),
-                  _buildBookingDateTime(),
-                  SizedBox(height: 10),
-                  _buildLocationStatus(),
-                  SizedBox(height: 10),
-                  _buildWaitingForCheckInButton(),
+                  _buildBillInputs(),
                 ],
               ),
             ),
@@ -82,9 +93,7 @@ class Billing extends StatelessWidget {
         ),
         SizedBox(width: 10),
         ElevatedButton(
-          onPressed: () {
-            // Handle search action
-          },
+          onPressed: _fetchBillDetails,
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.pink,
             padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
@@ -116,29 +125,6 @@ class Billing extends StatelessWidget {
     );
   }
 
-  Widget _buildInfoBox(String title, String value) {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(
-            title,
-            style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 16),
-          ),
-          SizedBox(height: 5),
-          Text(
-            value,
-            style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 16),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildReservationDetails() {
     return Container(
       padding: EdgeInsets.all(10),
@@ -151,15 +137,21 @@ class Billing extends StatelessWidget {
         children: [
           Text('Reservation Details', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 16)),
           SizedBox(height: 10),
-          _buildDetailRow('Name', 'kuldeep yadav'),
+          _buildDetailRow('Reservation Number', reservationNumber),
           SizedBox(height: 5),
-          _buildDetailRow('Phone Number', '9782713123'),
+          _buildDetailRow('Name', customerName),
           SizedBox(height: 5),
-          _buildDetailRow('Discount', '25%'),
+          _buildDetailRow('Phone Number', customerPhone),
           SizedBox(height: 5),
-          _buildDetailRow('No. of Person', '0000125'),
+          _buildDetailRow('Date', reservationDate),
           SizedBox(height: 5),
-          _buildDetailRow('Date Of Time', '02-07-2024 02:35 PM'),
+          _buildDetailRow('Time', reservationTime),
+          SizedBox(height: 5),
+          _buildDetailRow('Discount', '$discount%'),
+          SizedBox(height: 5),
+          _buildDetailRow('Reference', reference),
+          SizedBox(height: 5),
+          _buildDetailRow('Table Info', tableInfo),
         ],
       ),
     );
@@ -175,60 +167,84 @@ class Billing extends StatelessWidget {
     );
   }
 
-  Widget _buildBookingDateTime() {
+  Widget _buildBillInputs() {
     return Container(
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.3),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text('Booking Date Time', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 16)),
-          SizedBox(height: 10),
-          _buildDetailRow('Date', '02-07-2024'),
-          SizedBox(height: 5),
-          _buildDetailRow('Time', '12:05 PM'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildLocationStatus() {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildDetailRow('Location', 'Yard'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildWaitingForCheckInButton() {
-    return Center(
-      child: ElevatedButton(
-        onPressed: () {
-          // Handle waiting for check-in action
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+          Expanded(
+            child: _buildTextField(billNumberController, 'Enter Bill Number'),
           ),
-          padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-        ),
-        child: Text(
-          'Waiting For Check-In',
-          style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+          SizedBox(width: 10),
+          Expanded(
+            child: _buildTextField(billAmountController, 'Enter Bill Amount'),
+          ),
+          SizedBox(width: 10),
+          ElevatedButton(
+            onPressed: () {
+              // Handle bill submission
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
+            ),
+            child: Text('Submit', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTextField(TextEditingController controller, String hintText) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.3),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: TextField(
+        controller: controller,
+        cursorColor: Colors.white,
+        style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+          border: InputBorder.none,
         ),
       ),
     );
+  }
+
+  Future<void> _fetchBillDetails() async {
+    final response = await http.post(
+      Uri.parse('https://abc.charumindworks.com/inventory/api/v1/billsettlementlist'),
+      body: {
+        'user_id': '20',
+        'apiToken': '557f2929033db27b71f7c0d09b0c1b5c27e5677395fe78e812c16f68f5331222',
+        'date': dateController.text,
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body)['BillListData'][0];
+
+      setState(() {
+        reservationNumber = data['reservation_number'];
+        customerName = '${data['first_name']} ${data['last_name']}';
+        customerPhone = data['mobile'];
+        reservationDate = data['date'];
+        reservationTime = data['time'];
+        discount = data['discount'];
+        reference = data['reference'];
+        tableInfo = '${data['table_number']} - ${data['table_location']}';
+      });
+    } else {
+      // Handle error
+      print('Failed to fetch bill details');
+    }
   }
 }

@@ -205,8 +205,9 @@ class Utils {
     return false;
   }
   static String getCurrentFormattedDate() {
+    //'2024-07-05'
     DateTime currentDate = DateTime.now();
-    return DateFormat('dd-MM-yyyy').format(currentDate);
+    return DateFormat('yyyy-MM-dd').format(currentDate);
   }
  static Future<String> getAndroidId() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
