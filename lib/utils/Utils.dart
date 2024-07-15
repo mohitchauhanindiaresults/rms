@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -209,26 +208,26 @@ class Utils {
     DateTime currentDate = DateTime.now();
     return DateFormat('yyyy-MM-dd').format(currentDate);
   }
- static Future<String> getAndroidId() async {
-    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-    String deviceId="";
-
-    try {
-      if (kIsWeb) {
-        // web does not have device_id, implement your web specific way here
-      } else if (Platform.isIOS) {
-        IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-        deviceId = iosInfo.identifierForVendor!;
-      } else {
-        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-        deviceId = androidInfo.androidId!;
-      }
-    } on PlatformException {
-      deviceId = 'Failed to get deviceId';
-    }
-
-    return deviceId;
-  }
+ // static Future<String> getAndroidId() async {
+ //    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+ //    String deviceId="";
+ //
+ //    try {
+ //      if (kIsWeb) {
+ //        // web does not have device_id, implement your web specific way here
+ //      } else if (Platform.isIOS) {
+ //        IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+ //        deviceId = iosInfo.identifierForVendor!;
+ //      } else {
+ //        AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+ //        deviceId = androidInfo.androidId!;
+ //      }
+ //    } on PlatformException {
+ //      deviceId = 'Failed to get deviceId';
+ //    }
+ //
+ //    return deviceId;
+ //  }
 
   static void addAllUniqueClasses(String jsonResponse, List<String> dropdownItemList) {
     final decodedResponse = json.decode(jsonResponse);

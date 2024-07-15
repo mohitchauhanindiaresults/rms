@@ -26,7 +26,7 @@ class _AssignTableState extends State<AssignTable> {
   void initState() {
     super.initState();
     initate();
-    fetchReservations();
+   // fetchReservations();
   }
 
   Future<void> fetchReservations() async {
@@ -61,6 +61,7 @@ class _AssignTableState extends State<AssignTable> {
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
+      Fluttertoast.showToast(msg: "Data Fetched Successfully");
       print(response.body+"dvfvdf");
       if(data['status']==200){
         //   Fluttertoast.showToast(msg: data['message']);

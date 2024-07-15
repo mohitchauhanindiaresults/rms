@@ -2,19 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:rms/screens/SpalshScreen.dart';
 import 'package:rms/utils/theme.dart';
+import 'platform_specific.dart';
 
 void main() async {
-
-
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
 
-  print("object1234567890987654321234567890");
-  runApp(MyApp());
+  platformSpecificFunction();
 
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -23,10 +22,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'RMS',
       debugShowCheckedModeBanner: false,
-      //   routes: AppRoutes.routes,
+      // routes: AppRoutes.routes,
       theme: appTheme,
-
-      home: SplashScreen() ,
+      home: SplashScreen(),
     );
   }
 }
