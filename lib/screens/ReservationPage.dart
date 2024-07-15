@@ -14,10 +14,12 @@ import 'package:rms/screens/LoginPage.dart';
 import 'package:rms/screens/NoShowData.dart';
 import 'package:rms/screens/ReservationList.dart';
 import 'package:rms/screens/YardTableStatus.dart';
+import 'package:rms/utils/HtmlTableDisplay.dart';
 import 'package:rms/utils/Tint.dart';
 import 'package:rms/utils/Utils.dart';
 
 import '../utils/Constant.dart';
+import 'package:html/parser.dart' show parse;
 
 class ReservationPage extends StatefulWidget {
   @override
@@ -39,6 +41,7 @@ class _ReservationPageState extends State<ReservationPage> {
   TextEditingController sourceController = TextEditingController();
   TextEditingController referance = TextEditingController();
   bool referenceVisiblity=false;
+  List<TableRow> rows=[];
   @override
   void initState() {
     // TODO: implement initState
@@ -194,7 +197,7 @@ class _ReservationPageState extends State<ReservationPage> {
                         visible: referenceVisiblity,
                         child: _buildReferanceDropdown()),
                     SizedBox(height: 20),
-                    _buildMobileField(_mobileNumberController, 'Mobile Number'),
+                    _buildMobileFieldList(_mobileNumberController, 'Mobile Number'),
                     SizedBox(height: 20),
                     _buildTextField(_firstNameController, 'First Name'),
                     SizedBox(height: 20),
@@ -207,6 +210,14 @@ class _ReservationPageState extends State<ReservationPage> {
                     _buildDiscountDropdown(),
                     SizedBox(height: 20),
                     _buildBookNowButton(),
+                    SizedBox(height: 20),
+               //     HtmlTableDisplay(htmlData: htmlData)
+                Table(
+                  border: TableBorder.all(), // Add border to the table (optional)
+                  children: rows,
+                ),
+
+
                   ],
                 ),
               ),
@@ -329,6 +340,36 @@ class _ReservationPageState extends State<ReservationPage> {
       child: TextField(
         controller: controller,
 
+        cursorColor: Colors.white,
+        style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.transparent,
+          hintText: hintText,
+          hintStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+          border: InputBorder.none,
+        ),
+      ),
+    );
+  }
+  Widget _buildMobileFieldList(TextEditingController controller, String hintText) {
+    controller.addListener(() {
+      if (controller.text.length == 10) {
+       previosData(context,controller.text);
+
+      }
+    });
+
+    return Container(
+      height: 57,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: Colors.white.withOpacity(0.3),
+        border: Border.all(color: Colors.white),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: TextInputType.number,
         cursorColor: Colors.white,
         style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
         decoration: InputDecoration(
@@ -675,6 +716,14 @@ class _ReservationPageState extends State<ReservationPage> {
           );
         },
       );
+      print(sourceController.text+"fefvvevfev");
+      String discount="";
+      if(sourceController.text=="" ){
+        discount="N/A";
+      }else{
+        discount=sourceController.text;
+      }
+      print(discount+'sdfwefvef');
 
 
       final Dio dio = Dio();
@@ -689,7 +738,7 @@ class _ReservationPageState extends State<ReservationPage> {
         "no_off_person": _numberOfPersonController.text,
         "type": _reservationType,
         "table_location": _selectedLocation,
-        "discount": sourceController.text,
+        "discount":  discount,
         "reference": referance.text,
       };
 
@@ -725,6 +774,99 @@ class _ReservationPageState extends State<ReservationPage> {
       print("Error: $e");
     }
   }
+
+  Future<void> previosData(BuildContext context,Mobile) async {
+    try {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return WillPopScope(
+            child: SpinKitFadingCircle(
+              color: Color(Tint.Pink),
+              size: 50.0,
+            ),
+            onWillPop: () async => false,
+          );
+        },
+      );
+
+
+      final Dio dio = Dio();
+      final data = {
+        "user_id": email,
+        "apiToken": password,
+        "mobile": Mobile,
+      };
+
+      final response = await dio.post(
+        Constant.BASE_URL + "getcustomerdata",
+        data: data,
+      );
+
+      Navigator.pop(context);
+
+      if (response.statusCode == 200) {
+        print(response.data);
+        Map<String, dynamic> responseObject = jsonDecode(response.toString());
+        int status = responseObject['status'];
+        String message = responseObject['message'];
+
+
+        if (status == 200) {
+
+          String htmlData = responseObject['html'];
+          _firstNameController.text=responseObject['first_name'];
+          _lastNameController.text=responseObject['last_name'];
+          rows = _parseHtmlToTableRows(htmlData);
+          setState(() {
+
+
+          });
+
+        }else if(status==0){
+          Fluttertoast.showToast(msg: message);
+          Utils.navigateToPage(context, LoginPage());
+        } else {
+          Fluttertoast.showToast(msg: "Oops.. Something went wrong!");
+        }
+      } else {
+        Fluttertoast.showToast(msg: "Oops.. Something went wrong!111");
+      }
+    } catch (e) {
+      Navigator.pop(context);
+      Fluttertoast.showToast(msg: "Oops.. Something went wrong!");
+      print("Error: $e");
+    }
+  }
+
+  List<TableRow> _parseHtmlToTableRows(String htmlData) {
+    var document = parse(htmlData);
+    var rows = document.getElementsByTagName('tr');
+
+    return rows.map((row) {
+      var cells = row.getElementsByTagName('td');
+      if (cells.isEmpty) {
+        cells = row.getElementsByTagName('th'); // Handle header row
+      }
+
+      return TableRow(
+        decoration: BoxDecoration(
+          border: Border.all(color: Colors.white), // White border
+        ),
+        children: cells.map((cell) {
+          return Container(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              cell.text.trim(),
+              style: TextStyle(fontSize: 14, color: Colors.white), // White text
+            ),
+          );
+        }).toList(),
+      );
+    }).toList();
+  }
+
 
   Future<void> initiate() async {
     email = (await Utils.getStringFromPrefs(Constant.user_id))!;

@@ -13,13 +13,15 @@ class ChangeTableList extends StatefulWidget {
   final String reservationId;
   final String reservationNumber;
   final String mobileNumber;
-  final String bookingDateTime;
+  final String bookingDate;
+  final String bookingTime;
 
   ChangeTableList({
     required this.reservationId,
     required this.reservationNumber,
     required this.mobileNumber,
-    required this.bookingDateTime,
+    required this.bookingDate,
+    required this.bookingTime,
   });
 
   @override
@@ -122,7 +124,7 @@ class _ChangeTableListState extends State<ChangeTableList> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Assign Table',
+        title: Text('Change Table',
             style: TextStyle(fontFamily: 'Gilroy', fontSize: 20, color: Colors.white)),
         backgroundColor: Colors.pink,
           iconTheme: IconThemeData(
@@ -176,6 +178,13 @@ class _ChangeTableListState extends State<ChangeTableList> {
   }
 
   Widget _buildReservationInfo() {
+    String formattedValue;
+    try {
+      final time = DateFormat('HH:mm:ss').parse(widget.bookingTime.toString());
+      formattedValue = DateFormat('hh:mm a').format(time);
+    } catch (e) {
+      formattedValue = 'N/A';
+    }
     return Card(
       color: Colors.white.withOpacity(0.3),
       shape: RoundedRectangleBorder(
@@ -200,7 +209,11 @@ class _ChangeTableListState extends State<ChangeTableList> {
                 style: TextStyle(color: Colors.white),
               ),
               Text(
-                'Booking Date Time: ${widget.bookingDateTime}',
+                'Booking Date: ${widget.bookingDate}',
+                style: TextStyle(color: Colors.white),
+              ),
+              Text(
+                'Booking Date: ${formattedValue}',
                 style: TextStyle(color: Colors.white),
               ),
             ],
@@ -251,12 +264,12 @@ class _ChangeTableListState extends State<ChangeTableList> {
                       child: Container(
                         padding: EdgeInsets.symmetric(vertical: 4, horizontal: 3),
                         decoration: BoxDecoration(
-                          color: table.status == 1 ? Colors.green : Colors.red,
+                          color: table.reservation_number != "" ? Colors.red : Colors.green,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Center(
                           child: Text(
-                            table.status == 1 ? 'Available' : 'Reserved',
+                            table.reservation_number != "" ? 'Reserved' : 'Available',
                             style: TextStyle(color: Colors.white),
                           ),
                         ),
@@ -264,18 +277,20 @@ class _ChangeTableListState extends State<ChangeTableList> {
                     ),
                   ],
                 ),
-                SizedBox(height: 2),
-                Center(
-                  child: Image.asset(
-                    'assets/images/table.png', // Placeholder for table image
-                    height: 70,
+                SizedBox(height: 12),
+                if (table.reservation_number != "")
+                  Text(
+                    table.reservation_number.toString()+"\n"+table.reservation_name.toString()
+                        +"\n"+table.reservation_mobile.toString()
+
+                    , style: TextStyle(color: Colors.white, fontSize: 14),
                   ),
-                ),
                 SizedBox(height: 10),
                 Text(
                   '${table.tableNumber} - ${table.tableLocation} - ${table.capacity} Person',
                   style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                 ),
+
               ],
             ),
           ),
@@ -328,6 +343,9 @@ class TableData {
   final String? tableLocation;
   final String? capacity;
   final int? status;
+  final String? reservation_number;
+  final String? reservation_name;
+  final String? reservation_mobile;
 
   TableData({
     required this.id,
@@ -335,6 +353,9 @@ class TableData {
     this.tableLocation,
     this.capacity,
     this.status,
+    this.reservation_number,
+    this.reservation_name,
+    this.reservation_mobile,
   });
 
   factory TableData.fromJson(Map<String, dynamic> json) {
@@ -344,6 +365,9 @@ class TableData {
       tableLocation: json['table_location'],
       capacity: json['capacity'],
       status: json['status'],
+      reservation_number: json['reservation_number'],
+      reservation_name: json['reservation_name'],
+      reservation_mobile: json['reservation_mobile'],
     );
   }
 }

@@ -132,13 +132,14 @@ class _YardTableStatusState extends State<YardTableStatus> {
                   SizedBox(height: 10),
                   ...reservations.map((reservation) =>
                       _buildTableCard(
+
                         reservation.reservationNumber.isEmpty ? 'Available' : 'Reserved',
                         '${reservation.tableNumber} - ${reservation.tableLocation} - ${reservation.capacity} Person',
                         reservation.reservationNumber.isEmpty ? null : ReservationDetails(
                           id: reservation.id.toString(),
                           name: reservation.reservationName,
                           phoneNumber: reservation.reservationMobile,
-                          time: '${reservation.reservationTime} - ${reservation.reservationEndTime}',
+                          time: '${Utils.convertDateAndTime(reservation.reservationTime)} - ${Utils.convertDate(reservation.reservationEndTime)}',
                         ),
                         reservation.allBookings,
                       )),
@@ -270,8 +271,8 @@ class _YardTableStatusState extends State<YardTableStatus> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Reservation Details'),
-                      Text('Booking Date Time: ${booking.time}'),
-                      Text('Reservation Date Time: ${booking.endTime}'),
+                      Text('Booking Date Time: ${Utils.convertDate(booking.time)}'),
+                      Text('Reservation Date Time: ${Utils.convertDate(booking.endTime)}'),
                       Text('Persons: ${booking.noOffPerson}'),
                     ],
                   ),

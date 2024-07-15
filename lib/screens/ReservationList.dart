@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:rms/screens/ChangeTableList.dart';
 import 'package:rms/screens/LoginPage.dart';
 import 'package:rms/utils/Constant.dart';
@@ -76,6 +77,7 @@ class _ReservationListState extends State<ReservationList> {
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
      print(data);
+
 
 
 
@@ -463,7 +465,7 @@ class _ReservationListState extends State<ReservationList> {
           SizedBox(height: 5),
           _buildDetailRow('Phone Number', reservation['mobile']),
           SizedBox(height: 5),
-          _buildDetailRow('Discount', '${reservation['discount']}%'),
+          _buildDetailRow('Discount', '${reservation['discount']}'),
           SizedBox(height: 5),
           _buildDetailRow(
               'No. of Person', reservation['no_off_person'].toString()),
@@ -498,6 +500,36 @@ class _ReservationListState extends State<ReservationList> {
         ),      ],
     );
   }
+  Widget _buildDetailRowTime(String title, String value) {
+    String formattedValue;
+    try {
+      final time = DateFormat('HH:mm:ss').parse(value);
+      formattedValue = DateFormat('hh:mm a').format(time);
+    } catch (e) {
+      formattedValue = 'N/A';
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title,
+            style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Gilroy',
+                fontSize: 14,
+                fontWeight: FontWeight.w600)),
+        Text(
+          formattedValue,
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Gilroy',
+            fontSize: 14,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildDetailRowReferance(String title, String value) {
     // Print statement for debugging
     print('Title: $title, Value: $value');
@@ -546,7 +578,7 @@ class _ReservationListState extends State<ReservationList> {
           SizedBox(height: 10),
           _buildDetailRow('Date', reservation['date']),
           SizedBox(height: 5),
-          _buildDetailRow('Time', reservation['time']),
+          _buildDetailRowTime('Time', reservation['time']),
         ],
       ),
     );
@@ -573,13 +605,15 @@ class _ReservationListState extends State<ReservationList> {
     Color statusColor;
 
     if (reservation['status'] == 0 && reservation['check_in'] != null && reservation['check_in'].isNotEmpty) {
-      statusLabel = 'Check-In ${reservation['check_in']}';
+      statusLabel = 'Check-In ${Utils.convertDateAndTime(reservation['check_in'])}';
       statusColor = Colors.green;
     } else {
       switch (reservation['status']) {
         case 0:
           statusLabel = 'Waiting For Check-In';
           statusColor = Colors.green;
+          numberOfpersons.text = reservation["no_off_person"].toString();
+
           break;
         case 1:
           statusLabel = 'Table Allotted';
@@ -603,6 +637,7 @@ class _ReservationListState extends State<ReservationList> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+
         Text(
           statusLabel,
           style: TextStyle(
@@ -611,9 +646,12 @@ class _ReservationListState extends State<ReservationList> {
             color: statusColor,
           ),
         ),
-        if (reservation['status'] == 0 && (reservation['check_in'] == null || reservation['check_in'].isEmpty)) ...[
+
+
+    if (reservation['status'] == 0 && (reservation['check_in'] == null || reservation['check_in'].isEmpty)) ...[
           SizedBox(height: 10),
-          TextField(
+
+    TextField(
             controller: numberOfpersons,
             keyboardType: TextInputType.number,
             inputFormatters: <TextInputFormatter>[
@@ -678,7 +716,7 @@ class _ReservationListState extends State<ReservationList> {
           ElevatedButton(
             onPressed: () {
 
-              Utils.navigateToPage(context, ChangeTableList(reservationId: reservation['id'].toString(),reservationNumber: reservation['reservation_number'].toString(), mobileNumber: reservation['mobile'].toString(), bookingDateTime:  reservation['date'].toString()+" "+reservation['time'].toString()));
+              Utils.navigateToPage(context, ChangeTableList(reservationId: reservation['id'].toString(),reservationNumber: reservation['reservation_number'].toString(), mobileNumber: reservation['mobile'].toString(), bookingDate:  reservation['date'].toString(),bookingTime:reservation['time'].toString()));
               print('Change table for reservation ID: ${reservation['id']}');
               // You can add more functionality here as needed
             },

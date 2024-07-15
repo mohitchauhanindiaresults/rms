@@ -208,6 +208,27 @@ class Utils {
     DateTime currentDate = DateTime.now();
     return DateFormat('yyyy-MM-dd').format(currentDate);
   }
+
+  static String convertDate(String value) {
+    String formattedValue;
+    try {
+      final time = DateFormat('HH:mm:ss').parse(value);
+      formattedValue = DateFormat('hh:mm a').format(time);
+    } catch (e) {
+      formattedValue = 'N/A';
+    }
+    return formattedValue;
+  }
+  static String convertDateAndTime(String value) {
+    String formattedValue;
+    try {
+      final dateTime = DateFormat('yyyy-MM-dd HH:mm:ss').parse(value);
+      formattedValue = DateFormat('yyyy-MM-dd hh:mm a').format(dateTime);
+    } catch (e) {
+      formattedValue = 'N/A';
+    }
+    return formattedValue;
+  }
  // static Future<String> getAndroidId() async {
  //    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
  //    String deviceId="";
@@ -228,6 +249,8 @@ class Utils {
  //
  //    return deviceId;
  //  }
+
+
 
   static void addAllUniqueClasses(String jsonResponse, List<String> dropdownItemList) {
     final decodedResponse = json.decode(jsonResponse);

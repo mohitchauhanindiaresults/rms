@@ -166,7 +166,7 @@ class _BillingState extends State<Billing> {
               SizedBox(height: 5),
               _buildDetailRow('Time', bill['time']),
               SizedBox(height: 5),
-              _buildDetailRow('Discount', '${bill['discount']}%'),
+              _buildDetailRow('Discount', '${bill['discount']}'),
               SizedBox(height: 5),
               _buildDetailRow('Reference', bill['reference'] ?? 'NA'),
               SizedBox(height: 5),
@@ -203,11 +203,12 @@ class _BillingState extends State<Billing> {
   }
 
   Widget _buildDetailRow(String title, String value) {
+    String formatedvalue =Utils.convertDate(value);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title, style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
-        Text(value, style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
+        Text(formatedvalue, style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
       ],
     );
   }

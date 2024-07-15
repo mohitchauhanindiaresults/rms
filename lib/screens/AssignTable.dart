@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:rms/screens/ReservationPage.dart';
 import 'package:rms/utils/Constant.dart';
 import '../utils/Utils.dart';
@@ -63,13 +64,13 @@ class _AssignTableState extends State<AssignTable> {
       final data = json.decode(response.body);
       Fluttertoast.showToast(msg: "Data Fetched Successfully");
       print(response.body+"dvfvdf");
-      if(data['status']==200){
-        //   Fluttertoast.showToast(msg: data['message']);
-        setState(() {
-          reservations = data['ReservationData'];
-        });
+          if(data['status']==200){
+            //   Fluttertoast.showToast(msg: data['message']);
+            setState(() {
+              reservations = data['ReservationData'];
+            });
 
-      }else if(data['status']==0){
+          }else if(data['status']==0){
         Fluttertoast.showToast(msg: data['message']);
         Utils.navigateToPage(context, LoginPage());
       }else{
@@ -292,7 +293,7 @@ class _AssignTableState extends State<AssignTable> {
           SizedBox(height: 5),
           _buildDetailRow('Booking Date', reservation['date']),
           SizedBox(height: 5),
-          _buildDetailRow('Booking Time', reservation['time']),
+          _buildDetailRowTime('Booking Time', reservation['time']),
           SizedBox(height: 5),
           _buildDetailRow('Table Location', reservation['table_location']),
           SizedBox(height: 5),
@@ -333,6 +334,7 @@ class _AssignTableState extends State<AssignTable> {
   }
 
   Widget _buildDetailRow(String title, String value) {
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -348,6 +350,31 @@ class _AssignTableState extends State<AssignTable> {
       ],
     );
   }
+  Widget _buildDetailRowTime(String title, String value) {
+    String formattedValue;
+    try {
+      final time = DateFormat('HH:mm:ss').parse(value);
+      formattedValue = DateFormat('hh:mm a').format(time);
+    } catch (e) {
+      formattedValue = 'N/A';
+    }
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title,
+            style: TextStyle(
+                color: Colors.white,
+                fontFamily: 'Gilroy',
+                fontSize: 14,
+                fontWeight: FontWeight.w600)),
+        Text(formattedValue,
+            style: TextStyle(
+                color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
+      ],
+    );
+  }
+
 
   Widget _buildActionButtons(Map<String, dynamic> reservation) {
     return Row(
@@ -355,7 +382,7 @@ class _AssignTableState extends State<AssignTable> {
       children: [
         ElevatedButton(
           onPressed: () {
-            Utils.navigateToPage(context, AssignTableList(reservationNumber: reservation['reservation_number'].toString(), mobileNumber: reservation['mobile'].toString(), bookingDateTime:  reservation['date'].toString()+" "+reservation['time'].toString()));
+            Utils.navigateToPage(context, AssignTableList(reservationNumber: reservation['reservation_number'].toString(), mobileNumber: reservation['mobile'].toString(), bookingDate:  reservation['date'].toString(),bookingTime: reservation['time'].toString()));
           },
           style: ElevatedButton.styleFrom(
              backgroundColor: Colors.green,
