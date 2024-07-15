@@ -3,7 +3,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:rms/screens/ChangeTableList.dart';
+import 'package:rms/screens/LoginPage.dart';
 import 'package:rms/utils/Constant.dart';
 import 'package:rms/utils/Tint.dart';
 import 'package:rms/utils/Utils.dart';
@@ -56,8 +59,7 @@ class _ReservationListState extends State<ReservationList> {
     }
 
     final response = await http.post(
-      Uri.parse(
-          'https://abc.charumindworks.com/inventory/api/v1/getallreservations'),
+      Uri.parse('https://abc.charumindworks.com/inventory/api/v1/getallreservations'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -75,14 +77,36 @@ class _ReservationListState extends State<ReservationList> {
       final data = json.decode(response.body);
      print(data);
 
-      setState(() {
-        reservations = data['ReservationData'];
-        totalPerson = {
-          for (var item in data['totalPerson'])
-            item['table_location']: item['total']
-        };
-      });
+
+
+
+
+     if(data['status']==200){
+    //   Fluttertoast.showToast(msg: data['message']);
+       setState(() {
+         reservations = data['ReservationData'];
+         totalPerson = {
+           for (var item in data['totalPerson'])
+             item['table_location']: item['total']
+         };
+       });
+
+     }else if(data['status']==0){
+       Fluttertoast.showToast(msg: data['message']);
+       Utils.navigateToPage(context, LoginPage());
+     }else{
+       Fluttertoast.showToast(msg: data['message']);
+     }
+
+
+
+
+
+
+
+
     } else {
+      Fluttertoast.showToast(msg: 'Something went wrong!!');
       throw Exception('Failed to load reservations');
     }
   }
@@ -635,7 +659,6 @@ class _ReservationListState extends State<ReservationList> {
               ElevatedButton(
                 onPressed: () {
                   // Implement cancellation logic here
-                 // print('Cancel reservation with ID: ${reservation['id']}');
                   cancleReservation(reservation['id']);
                   // You can add more functionality here as needed
                 },
@@ -648,6 +671,24 @@ class _ReservationListState extends State<ReservationList> {
                 ),
               ),
             ],
+          ),
+        ],
+        if (reservation['status'] == 1) ...[
+          SizedBox(height: 10),
+          ElevatedButton(
+            onPressed: () {
+
+              Utils.navigateToPage(context, ChangeTableList(reservationId: reservation['id'].toString(),reservationNumber: reservation['reservation_number'].toString(), mobileNumber: reservation['mobile'].toString(), bookingDateTime:  reservation['date'].toString()+" "+reservation['time'].toString()));
+              print('Change table for reservation ID: ${reservation['id']}');
+              // You can add more functionality here as needed
+            },
+            child: Text(
+              'Change Table',
+              style: TextStyle(fontFamily: 'Gilroy', color: Colors.white),
+            ),
+            style: ButtonStyle(
+              backgroundColor: MaterialStateProperty.all<Color>(Colors.orange),
+            ),
           ),
         ],
       ],
@@ -663,6 +704,7 @@ class _ReservationListState extends State<ReservationList> {
     password = (await Utils.getStringFromPrefs(Constant.api_token))!;
     print(user_id + "check1");
     print(password);
+
     fetchReservations();
   }
 }

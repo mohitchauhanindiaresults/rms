@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:rms/utils/Constant.dart';
 import 'package:rms/utils/Utils.dart';
 import '../utils/Tint.dart';
+import 'LoginPage.dart';
 
 class YardTableStatus extends StatefulWidget {
   @override
@@ -42,13 +44,23 @@ class _YardTableStatusState extends State<YardTableStatus> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      if (data['status'] == 200) {
-        setState(() {
-          reservations = (data['ReservationData'] as List)
-              .map((item) => TableReservation.fromJson(item))
-              .toList();
-        });
-      }
+
+        if(data['status']==200){
+          //   Fluttertoast.showToast(msg: data['message']);
+          setState(() {
+            reservations = (data['ReservationData'] as List)
+                .map((item) => TableReservation.fromJson(item))
+                .toList();
+          });
+
+        }else if(data['status']==0){
+          Fluttertoast.showToast(msg: data['message']);
+          Utils.navigateToPage(context, LoginPage());
+        }else{
+          Fluttertoast.showToast(msg: data['message']);
+        }
+
+
     } else {
       // Handle error
       print('Failed to load data');
@@ -144,15 +156,6 @@ class _YardTableStatusState extends State<YardTableStatus> {
       children: [
         Expanded(
           child: _buildTextFieldWithIcon(dateController, 'Date', Icons.calendar_today, () => _selectDate(context)),
-        ),
-        SizedBox(width: 10),
-        ElevatedButton(
-          onPressed: fetchData,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink,
-            padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-          ),
-          child: Text('Search', style: TextStyle(color: Colors.white)),
         ),
       ],
     );

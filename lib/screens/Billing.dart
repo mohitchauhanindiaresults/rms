@@ -1,8 +1,16 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
+import 'package:rms/screens/ReservationPage.dart';
+import 'package:rms/utils/Constant.dart';
 import 'dart:convert';
 
+import '../utils/Tint.dart';
 import '../utils/Utils.dart';
+import 'LoginPage.dart';
 
 class Billing extends StatefulWidget {
   @override
@@ -11,23 +19,16 @@ class Billing extends StatefulWidget {
 
 class _BillingState extends State<Billing> {
   final TextEditingController dateController = TextEditingController();
-  final TextEditingController billNumberController = TextEditingController();
-  final TextEditingController billAmountController = TextEditingController();
+  DateTime selectedDate = DateTime.now();
+  List<Map<String, dynamic>> billList = [];
+  String userId = '';
+  String apiToken = '';
 
-  String reservationNumber = '';
-  String customerName = '';
-  String customerPhone = '';
-  String reservationDate = '';
-  String reservationTime = '';
-  String discount = '';
-  String reference = '';
-  String tableInfo = '';
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    dateController.text=Utils.getCurrentFormattedDate();
-    _fetchBillDetails();
+    dateController.text = Utils.getCurrentFormattedDate();
+    initiate();
   }
 
   @override
@@ -35,7 +36,7 @@ class _BillingState extends State<Billing> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Bill Settlement', style: TextStyle(fontFamily: 'Gilroy', fontSize: 20, color: Colors.white)),
-        backgroundColor: Color(0xFFC62828),
+        backgroundColor: Color(Tint.Pink),
         iconTheme: IconThemeData(
           color: Colors.white,
         ),
@@ -73,9 +74,7 @@ class _BillingState extends State<Billing> {
                 children: [
                   _buildDateSearch(),
                   SizedBox(height: 10),
-                  _buildReservationDetails(),
-                  SizedBox(height: 10),
-                  _buildBillInputs(),
+                  _buildBillList(),
                 ],
               ),
             ),
@@ -89,71 +88,117 @@ class _BillingState extends State<Billing> {
     return Row(
       children: [
         Expanded(
-          child: _buildTextFieldWithIcon(dateController, 'Date', Icons.calendar_today),
+          child: _buildTextFieldWithIcon(dateController, 'Date', Icons.calendar_today, () => _selectDate(context)),
         ),
-        SizedBox(width: 10),
-        ElevatedButton(
-          onPressed: _fetchBillDetails,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink,
-            padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-          ),
-          child: Text('Search', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy')),
-        ),
+
       ],
     );
   }
 
-  Widget _buildTextFieldWithIcon(TextEditingController controller, String hintText, IconData icon) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: TextField(
-        controller: controller,
-        cursorColor: Colors.white,
-        style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
-        decoration: InputDecoration(
-          hintText: hintText,
-          hintStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
-          border: InputBorder.none,
-          icon: Icon(icon, color: Colors.white),
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: selectedDate,
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != selectedDate) {
+      setState(() {
+        selectedDate = picked;
+        dateController.text = DateFormat('yyyy-MM-dd').format(selectedDate);
+        _fetchBillDetails();
+      });
+    }
+  }
+
+  Widget _buildTextFieldWithIcon(TextEditingController controller, String hintText, IconData icon, Function onTap) {
+    return GestureDetector(
+      onTap: () => onTap(),
+      child: AbsorbPointer(
+        child: TextField(
+          controller: controller,
+          cursorColor: Colors.white,
+          style: TextStyle(color: Colors.white),
+          decoration: InputDecoration(
+            hintText: hintText,
+            hintStyle: TextStyle(color: Colors.white),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            filled: true,
+            fillColor: Colors.white.withOpacity(0.3),
+            prefixIcon: Icon(icon, color: Colors.white),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildReservationDetails() {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Reservation Details', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 16)),
-          SizedBox(height: 10),
-          _buildDetailRow('Reservation Number', reservationNumber),
-          SizedBox(height: 5),
-          _buildDetailRow('Name', customerName),
-          SizedBox(height: 5),
-          _buildDetailRow('Phone Number', customerPhone),
-          SizedBox(height: 5),
-          _buildDetailRow('Date', reservationDate),
-          SizedBox(height: 5),
-          _buildDetailRow('Time', reservationTime),
-          SizedBox(height: 5),
-          _buildDetailRow('Discount', '$discount%'),
-          SizedBox(height: 5),
-          _buildDetailRow('Reference', reference),
-          SizedBox(height: 5),
-          _buildDetailRow('Table Info', tableInfo),
-        ],
-      ),
+  Widget _buildBillList() {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: billList.length,
+      itemBuilder: (context, index) {
+        final bill = billList[index];
+        final TextEditingController numberOfPersonsController = TextEditingController();
+        final TextEditingController billAmountController = TextEditingController();
+
+        return Container(
+          margin: EdgeInsets.only(bottom: 10),
+          padding: EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Reservation Details', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 16)),
+              SizedBox(height: 10),
+              _buildDetailRow('Reservation Number', bill['reservation_number']),
+              SizedBox(height: 5),
+              _buildDetailRow('Name', '${bill['first_name']} ${bill['last_name']}'),
+              SizedBox(height: 5),
+              _buildDetailRow('Phone Number', bill['mobile']),
+              SizedBox(height: 5),
+              _buildDetailRow('Date', bill['date']),
+              SizedBox(height: 5),
+              _buildDetailRow('Time', bill['time']),
+              SizedBox(height: 5),
+              _buildDetailRow('Discount', '${bill['discount']}%'),
+              SizedBox(height: 5),
+              _buildDetailRow('Reference', bill['reference'] ?? 'NA'),
+              SizedBox(height: 5),
+              _buildDetailRow('Table Info', '${bill['table_number']} - ${bill['table_location'] ?? ''}'),
+              SizedBox(height: 10),
+              _buildTextField(numberOfPersonsController, 'Enter Bill Number', TextInputType.number),
+              SizedBox(height: 10),
+              _buildTextField(billAmountController, 'Enter Bill Amount', TextInputType.number),
+              SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  if (numberOfPersonsController.text.isNotEmpty && billAmountController.text.isNotEmpty) {
+                    print('Reservation ID: ${bill['id']}');
+                    print('No of Persons: ${numberOfPersonsController.text}');
+                    print('Bill Amount: ${billAmountController.text}');
+                    _saveBillDetails(bill['id'].toString(),numberOfPersonsController.text,billAmountController.text);
+
+                  } else {
+                    print('Please fill in all fields');
+                    Utils.showAlertDialogError(context, "Alert", "Please fill all details");
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
+                ),
+                child: Text('Submit', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy')),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -167,55 +212,38 @@ class _BillingState extends State<Billing> {
     );
   }
 
-  Widget _buildBillInputs() {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: _buildTextField(billNumberController, 'Enter Bill Number'),
-          ),
-          SizedBox(width: 10),
-          Expanded(
-            child: _buildTextField(billAmountController, 'Enter Bill Amount'),
-          ),
-          SizedBox(width: 10),
-          ElevatedButton(
-            onPressed: () {
-              // Handle bill submission
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-            ),
-            child: Text('Submit', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy')),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTextField(TextEditingController controller, String hintText) {
+  Widget _buildTextField(TextEditingController controller, String hintText, TextInputType keyboardType) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.3),
+     //  color: Colors.white.withOpacity(0.5),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: TextField(
+      child:
+      TextField(
         controller: controller,
-        cursorColor: Colors.white,
-        style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+        keyboardType: TextInputType.number,
+        inputFormatters: <TextInputFormatter>[
+          FilteringTextInputFormatter.digitsOnly
+        ],
+        style: TextStyle(
+          color: Colors.white, // Text color
+          fontFamily: 'Gilroy',
+        ),
+        cursorColor: Colors.white, // Cursor color
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
-          border: InputBorder.none,
+          filled: true,
+          fillColor: Colors.white.withOpacity(0.3),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide.none,
+          ),
+          contentPadding: EdgeInsets.symmetric(horizontal: 10),
         ),
       ),
+
     );
   }
 
@@ -223,28 +251,59 @@ class _BillingState extends State<Billing> {
     final response = await http.post(
       Uri.parse('https://abc.charumindworks.com/inventory/api/v1/billsettlementlist'),
       body: {
-        'user_id': '20',
-        'apiToken': '557f2929033db27b71f7c0d09b0c1b5c27e5677395fe78e812c16f68f5331222',
+        'user_id': userId,
+        'apiToken': apiToken,
         'date': dateController.text,
       },
     );
 
     if (response.statusCode == 200) {
-      final data = json.decode(response.body)['BillListData'][0];
+      final dataa = json.decode(response.body);
+      if(dataa['status']==200){
+        //   Fluttertoast.showToast(msg: data['message']);
+        final List<dynamic> data = json.decode(response.body)['BillListData'];
 
-      setState(() {
-        reservationNumber = data['reservation_number'];
-        customerName = '${data['first_name']} ${data['last_name']}';
-        customerPhone = data['mobile'];
-        reservationDate = data['date'];
-        reservationTime = data['time'];
-        discount = data['discount'];
-        reference = data['reference'];
-        tableInfo = '${data['table_number']} - ${data['table_location']}';
-      });
+        setState(() {
+          billList = data.map((bill) => bill as Map<String, dynamic>).toList();
+        });
+      }else if(dataa['status']==0){
+        Fluttertoast.showToast(msg: dataa['message']);
+        Utils.navigateToPage(context, LoginPage());
+      }else{
+        Fluttertoast.showToast(msg: dataa['message']);
+      }
+
+
+
     } else {
-      // Handle error
       print('Failed to fetch bill details');
     }
+  }
+  Future<void> _saveBillDetails(String rvID,String number,String amount) async {
+    final response = await http.post(
+      Uri.parse('https://abc.charumindworks.com/inventory/api/v1/savebill'),
+      body: {
+        'user_id': userId,
+        'apiToken': apiToken,
+        'reservation_id': rvID,
+        'bill_number':number,
+        'bill_amount': amount,
+      },
+    );
+
+    if (response.statusCode == 200) {
+
+        Utils.navigateToPage(context, ReservationPage());
+    } else {
+      print('Failed to fetch bill details');
+    }
+  }
+
+  Future<void> initiate() async {
+    userId = (await Utils.getStringFromPrefs(Constant.user_id))!;
+    apiToken = (await Utils.getStringFromPrefs(Constant.api_token))!;
+    Timer(Duration(milliseconds: 50), () async {
+      _fetchBillDetails();
+    });
   }
 }

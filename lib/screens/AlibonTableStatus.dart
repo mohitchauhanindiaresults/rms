@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:rms/utils/Constant.dart';
 import 'package:rms/utils/Utils.dart';
 import '../utils/Tint.dart';
+import 'LoginPage.dart';
 
 class AlibonTableStatus extends StatefulWidget {
   @override
@@ -42,12 +44,19 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      if (data['status'] == 200) {
+      if(data['status']==200){
+        //   Fluttertoast.showToast(msg: data['message']);
         setState(() {
           reservations = (data['ReservationData'] as List)
               .map((item) => TableReservation.fromJson(item))
               .toList();
         });
+
+      }else if(data['status']==0){
+        Fluttertoast.showToast(msg: data['message']);
+        Utils.navigateToPage(context, LoginPage());
+      }else{
+        Fluttertoast.showToast(msg: data['message']);
       }
     } else {
       // Handle error
@@ -145,15 +154,7 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
         Expanded(
           child: _buildTextFieldWithIcon(dateController, 'Date', Icons.calendar_today, () => _selectDate(context)),
         ),
-        SizedBox(width: 10),
-        ElevatedButton(
-          onPressed: fetchData,
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink,
-            padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-          ),
-          child: Text('Search', style: TextStyle(color: Colors.white)),
-        ),
+
       ],
     );
   }
@@ -262,11 +263,12 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
               itemBuilder: (BuildContext context, int index) {
                 final booking = bookings[index];
                 return ListTile(
-                  title: Text('${booking.firstName} ${booking.lastName}'),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Reservation Details'),
+                      Text('Reservation Details',style: (TextStyle(fontWeight: FontWeight.w600)),),
+                      SizedBox(height: 10),
+                      Text('${booking.firstName} ${booking.lastName}'),
                       Text('Booking Date Time: ${booking.time}'),
                       Text('Reservation Date Time: ${booking.endTime}'),
                       Text('Persons: ${booking.noOffPerson}'),
@@ -339,6 +341,9 @@ class Booking {
   final String time;
   final String endTime;
   final int noOffPerson;
+  final String date;
+  final String mobile;
+  final String reservation_number;
 
   Booking({
     required this.firstName,
@@ -346,6 +351,9 @@ class Booking {
     required this.time,
     required this.endTime,
     required this.noOffPerson,
+    required this.date,
+    required this.mobile,
+    required this.reservation_number,
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) {
@@ -355,6 +363,9 @@ class Booking {
       time: json['time'],
       endTime: json['end_time'],
       noOffPerson: json['no_off_person'],
+      date: json['date'],
+      mobile: json['mobile'],
+      reservation_number: json['reservation_number'],
     );
   }
 }

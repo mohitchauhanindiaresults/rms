@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -10,6 +11,7 @@ import 'package:rms/screens/AlibonTableStatus.dart';
 import 'package:rms/screens/AssignTable.dart';
 import 'package:rms/screens/Billing.dart';
 import 'package:rms/screens/LoginPage.dart';
+import 'package:rms/screens/NoShowData.dart';
 import 'package:rms/screens/ReservationList.dart';
 import 'package:rms/screens/YardTableStatus.dart';
 import 'package:rms/utils/Tint.dart';
@@ -135,7 +137,7 @@ class _ReservationPageState extends State<ReservationPage> {
                 leading: Icon(Icons.hourglass_empty),
                 title: Text('No Show'),
                 onTap: () {
-                  // Handle no show tap
+                  Utils.navigateToPage(context, NoShowData());
                 },
               ),
               ListTile(
@@ -214,7 +216,6 @@ class _ReservationPageState extends State<ReservationPage> {
       ),
     );
   }
-
   Widget _buildLocationSelector() {
     return Container(
       padding: EdgeInsets.all(0),
@@ -264,7 +265,6 @@ class _ReservationPageState extends State<ReservationPage> {
       ),
     );
   }
-
   Widget _buildReservationTypeSelector() {
     return Container(
       padding: EdgeInsets.all(0),
@@ -318,7 +318,6 @@ class _ReservationPageState extends State<ReservationPage> {
       ),
     );
   }
-
   Widget _buildTextField(TextEditingController controller, String hintText) {
     return Container(
       height: 57,
@@ -365,7 +364,6 @@ class _ReservationPageState extends State<ReservationPage> {
       ),
     );
   }
-
   Widget _buildTimeDatePicker() {
     return Row(
       children: [
@@ -508,7 +506,6 @@ class _ReservationPageState extends State<ReservationPage> {
       ],
     );
   }
-
   Widget _buildDiscountDropdown() {
     return DropdownButtonFormField<String>(
       style: TextStyle(color: Colors.pink, fontFamily: 'Gilroy'),
@@ -631,11 +628,12 @@ class _ReservationPageState extends State<ReservationPage> {
             } else if (_numberOfPersonController.text.isEmpty) {
               Utils.showAlertDialogError(
                   context, "Alert", "Number of Persons Cannot be empty");
-            } else if (sourceController.text == null ||
-                sourceController.text.isEmpty) {
-              Utils.showAlertDialogError(
-                  context, "Alert", "Discount Cannot be empty");
-            } else if (_mobileNumberController.text.length != 10) {
+            }
+            // else if (sourceController.text == null || sourceController.text.isEmpty) {
+            //   Utils.showAlertDialogError(
+            //       context, "Alert", "Discount Cannot be empty");
+            // }
+            else if (_mobileNumberController.text.length != 10) {
               Utils.showAlertDialogError(
                   context, "Alert", "Mobile number is not valid");
             } else {
@@ -711,8 +709,10 @@ class _ReservationPageState extends State<ReservationPage> {
 
         if (status == 200) {
           Fluttertoast.showToast(msg: message);
-
           Utils.navigateToPage(context, ReservationPage());
+        }else if(status==0){
+          Fluttertoast.showToast(msg: message);
+          Utils.navigateToPage(context, LoginPage());
         } else {
           Fluttertoast.showToast(msg: "Oops.. Something went wrong!");
         }
@@ -729,6 +729,7 @@ class _ReservationPageState extends State<ReservationPage> {
   Future<void> initiate() async {
     email = (await Utils.getStringFromPrefs(Constant.user_id))!;
     password = (await Utils.getStringFromPrefs(Constant.api_token))!;
+
     print(email+"check1");
     print(password);
   }

@@ -2,10 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:rms/screens/ReservationPage.dart';
 import 'package:rms/utils/Constant.dart';
 import '../utils/Utils.dart';
 import 'AssignTableList.dart';
+import 'LoginPage.dart';
 
 class AssignTable extends StatefulWidget {
   @override
@@ -55,11 +58,60 @@ class _AssignTableState extends State<AssignTable> {
     );
     Navigator.pop(context);
 
+
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      setState(() {
-        reservations = data['ReservationData'];
-      });
+      print(response.body+"dvfvdf");
+      if(data['status']==200){
+        //   Fluttertoast.showToast(msg: data['message']);
+        setState(() {
+          reservations = data['ReservationData'];
+        });
+
+      }else if(data['status']==0){
+        Fluttertoast.showToast(msg: data['message']);
+        Utils.navigateToPage(context, LoginPage());
+      }else{
+        Fluttertoast.showToast(msg: data['message']);
+      }
+    } else {
+      throw Exception('Failed to load reservations');
+    }
+  }
+  Future<void> tableNotAvailable(String rvId) async {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return WillPopScope(
+          child: SpinKitFadingCircle(
+            color: Colors.pink,
+            size: 50.0,
+          ),
+          onWillPop: () async => false,
+        );
+      },
+    );
+
+    final response = await http.post(
+      Uri.parse(
+          'https://abc.charumindworks.com/inventory/api/v1/savenoshow'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'user_id': user_id,
+        'apiToken': apiToken,
+        'reservation_id': rvId,
+        'no_show_remark': "table not available",
+      }),
+    );
+    Navigator.pop(context);
+
+    if (response.statusCode == 200) {
+
+      Utils.navigateToPage(context, ReservationPage());
+
     } else {
       throw Exception('Failed to load reservations');
     }
@@ -305,18 +357,18 @@ class _AssignTableState extends State<AssignTable> {
             Utils.navigateToPage(context, AssignTableList(reservationNumber: reservation['reservation_number'].toString(), mobileNumber: reservation['mobile'].toString(), bookingDateTime:  reservation['date'].toString()+" "+reservation['time'].toString()));
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.pink,
+             backgroundColor: Colors.green,
           ),
           child: Text('Assign Table', style: TextStyle(fontFamily: 'Gilroy')),
         ),
         ElevatedButton(
           onPressed: () {
-            // Add functionality for submitting here
+            tableNotAvailable( reservation['id'].toString());
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.pink,
           ),
-          child: Text('Submit', style: TextStyle(fontFamily: 'Gilroy')),
+          child: Text('Table Not Available', style: TextStyle(fontFamily: 'Gilroy')),
         ),
       ],
     );
