@@ -207,11 +207,11 @@ class _AssignTableListState extends State<AssignTableList> {
                 style: TextStyle(color: Colors.white),
               ),
               Text(
-                'Booking Date: ${widget.bookingDate}',
+                'Reservation Date: ${widget.bookingDate}',
                 style: TextStyle(color: Colors.white),
               ),
               Text(
-                'Booking Time: ${formattedValue}',
+                'Reservation Time: ${formattedValue}',
                 style: TextStyle(color: Colors.white),
               ),
             ],

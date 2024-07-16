@@ -209,11 +209,11 @@ class _ChangeTableListState extends State<ChangeTableList> {
                 style: TextStyle(color: Colors.white),
               ),
               Text(
-                'Booking Date: ${widget.bookingDate}',
+                'Reservation Date: ${widget.bookingDate}',
                 style: TextStyle(color: Colors.white),
               ),
               Text(
-                'Booking Date: ${formattedValue}',
+                'Reservation Date: ${formattedValue}',
                 style: TextStyle(color: Colors.white),
               ),
             ],

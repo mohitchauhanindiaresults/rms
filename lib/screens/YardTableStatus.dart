@@ -136,10 +136,10 @@ class _YardTableStatusState extends State<YardTableStatus> {
                         reservation.reservationNumber.isEmpty ? 'Available' : 'Reserved',
                         '${reservation.tableNumber} - ${reservation.tableLocation} - ${reservation.capacity} Person',
                         reservation.reservationNumber.isEmpty ? null : ReservationDetails(
-                          id: reservation.id.toString(),
+                          reservation_number: reservation.reservationNumber.toString(),
                           name: reservation.reservationName,
                           phoneNumber: reservation.reservationMobile,
-                          time: '${Utils.convertDateAndTime(reservation.reservationTime)} - ${Utils.convertDate(reservation.reservationEndTime)}',
+                          reservation_time: '${Utils.convertDateAndTime(reservation.reservationTime)} - ${Utils.convertDate(reservation.reservationEndTime)}',
                         ),
                         reservation.allBookings,
                       )),
@@ -220,10 +220,10 @@ class _YardTableStatusState extends State<YardTableStatus> {
             Text(tableInfo, style: TextStyle(color: Colors.white, fontSize: 16)),
             if (details != null) ...[
               SizedBox(height: 10),
-              Text('ID: ${details.id}', style: TextStyle(color: Colors.white)),
+              Text('Reservation Number: ${details.reservation_number}', style: TextStyle(color: Colors.white)),
               Text('Name: ${details.name}', style: TextStyle(color: Colors.white)),
               Text('Phone: ${details.phoneNumber}', style: TextStyle(color: Colors.white)),
-              Text('Time: ${details.time}', style: TextStyle(color: Colors.white)),
+              Text('Booking Date Time: ${details.reservation_time}', style: TextStyle(color: Colors.white)),
             ],
             SizedBox(height: 10),
             Center(
@@ -266,13 +266,14 @@ class _YardTableStatusState extends State<YardTableStatus> {
               itemBuilder: (BuildContext context, int index) {
                 final booking = bookings[index];
                 return ListTile(
-                  title: Text('${booking.firstName} ${booking.lastName}'),
+                  title: Text('Reservation Details'),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Reservation Details'),
-                      Text('Booking Date Time: ${Utils.convertDate(booking.time)}'),
-                      Text('Reservation Date Time: ${Utils.convertDate(booking.endTime)}'),
+                      Text('Name : ${booking.firstName} ${booking.lastName}'),
+                      Text('Reservation Number : ${booking.reservation_number}'),
+                      Text('Reservation Date Time: ${booking.date} ${Utils.convertDate(booking.time)}'),
+                   //   Text(' Date Time: ${Utils.convertDate(booking.endTime)}'),
                       Text('Persons: ${booking.noOffPerson}'),
                     ],
                   ),
@@ -343,6 +344,8 @@ class Booking {
   final String time;
   final String endTime;
   final int noOffPerson;
+  final String date;
+  final String reservation_number;
 
   Booking({
     required this.firstName,
@@ -350,6 +353,8 @@ class Booking {
     required this.time,
     required this.endTime,
     required this.noOffPerson,
+    required this.date,
+    required this.reservation_number,
   });
 
   factory Booking.fromJson(Map<String, dynamic> json) {
@@ -359,20 +364,22 @@ class Booking {
       time: json['time'],
       endTime: json['end_time'],
       noOffPerson: json['no_off_person'],
+      date: json['date'],
+      reservation_number: json['reservation_number'],
     );
   }
 }
 
 class ReservationDetails {
-  final String id;
+  final String reservation_number;
   final String name;
   final String phoneNumber;
-  final String time;
+  final String reservation_time;
 
   ReservationDetails({
-    required this.id,
+    required this.reservation_number,
     required this.name,
     required this.phoneNumber,
-    required this.time,
+    required this.reservation_time,
   });
 }

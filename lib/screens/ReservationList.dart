@@ -320,11 +320,11 @@ class _ReservationListState extends State<ReservationList> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildInfoBox(' Yard ', totalPerson['YARD'] ?? '0'),
-                      _buildInfoBox('Alibon', totalPerson['ALIBON'] ?? '0'),
+                      _buildInfoBox(' Yard ', totalPerson['Yard'] ?? '0'),
+                      _buildInfoBox('Alibon', totalPerson['Alibon'] ?? '0'),
                       _buildInfoBox(
                           '      Total      ',
-                          (int.tryParse(totalPerson['YARD'] ?? '0')! + int.tryParse(totalPerson['ALIBON'] ?? '0')!)
+                          (int.tryParse(totalPerson['Yard'] ?? '0')! + int.tryParse(totalPerson['Alibon'] ?? '0')!)
                               .toString()),
                     ],
                   ),
@@ -397,6 +397,9 @@ class _ReservationListState extends State<ReservationList> {
   }
 
   Widget _buildInfoBox(String title, String value) {
+    print(title+"ccccc");
+    print(value);
+
     return Container(
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
@@ -491,7 +494,7 @@ class _ReservationListState extends State<ReservationList> {
                 fontSize: 14,
                 fontWeight: FontWeight.w600)),
         Text(
-          (value == null || value.isEmpty) ? 'N/A' : value,
+          (value == "null" || value.isEmpty) ? 'N/A' : value,
           style: TextStyle(
             color: Colors.white,
             fontFamily: 'Gilroy',
@@ -569,7 +572,7 @@ class _ReservationListState extends State<ReservationList> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Booking Date Time',
+          Text('Reservation Date Time',
               style: TextStyle(
                   color: Color(Tint.LightBlack),
                   fontFamily: 'Gilroy',

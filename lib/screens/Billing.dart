@@ -164,7 +164,7 @@ class _BillingState extends State<Billing> {
               SizedBox(height: 5),
               _buildDetailRow('Date', bill['date']),
               SizedBox(height: 5),
-              _buildDetailRow('Time', bill['time']),
+              _buildDetailRowTime('Time', bill['time']),
               SizedBox(height: 5),
               _buildDetailRow('Discount', '${bill['discount']}'),
               SizedBox(height: 5),
@@ -203,6 +203,14 @@ class _BillingState extends State<Billing> {
   }
 
   Widget _buildDetailRow(String title, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
+        Text(value, style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
+      ],
+    );
+  } Widget _buildDetailRowTime(String title, String value) {
     String formatedvalue =Utils.convertDate(value);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -260,6 +268,7 @@ class _BillingState extends State<Billing> {
 
     if (response.statusCode == 200) {
       final dataa = json.decode(response.body);
+      print(response.body);
       if(dataa['status']==200){
         //   Fluttertoast.showToast(msg: data['message']);
         final List<dynamic> data = json.decode(response.body)['BillListData'];
@@ -273,8 +282,6 @@ class _BillingState extends State<Billing> {
       }else{
         Fluttertoast.showToast(msg: dataa['message']);
       }
-
-
 
     } else {
       print('Failed to fetch bill details');

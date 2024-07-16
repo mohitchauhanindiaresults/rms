@@ -240,7 +240,7 @@ class _ReservationPageState extends State<ReservationPage> {
             flex: 7,
             child: RadioListTile(
               title: Text(
-                'Yard',
+                'YARD',
                 style: TextStyle(
                     color: Colors.white, fontFamily: 'Gilroy', fontSize: 14),
               ),
@@ -258,7 +258,7 @@ class _ReservationPageState extends State<ReservationPage> {
             flex: 10,
             child: RadioListTile(
               title: Text(
-                'Alibon',
+                'ALIBON',
                 style: TextStyle(
                     color: Colors.white, fontFamily: 'Gilroy', fontSize: 14),
               ),

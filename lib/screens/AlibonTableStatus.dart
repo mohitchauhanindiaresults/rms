@@ -44,6 +44,7 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+
       if(data['status']==200){
         //   Fluttertoast.showToast(msg: data['message']);
         setState(() {
@@ -58,6 +59,8 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
       }else{
         Fluttertoast.showToast(msg: data['message']);
       }
+
+
     } else {
       // Handle error
       print('Failed to load data');
@@ -129,13 +132,14 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
                   SizedBox(height: 10),
                   ...reservations.map((reservation) =>
                       _buildTableCard(
+
                         reservation.reservationNumber.isEmpty ? 'Available' : 'Reserved',
                         '${reservation.tableNumber} - ${reservation.tableLocation} - ${reservation.capacity} Person',
                         reservation.reservationNumber.isEmpty ? null : ReservationDetails(
-                          id: reservation.id.toString(),
+                          reservation_number: reservation.reservationNumber.toString(),
                           name: reservation.reservationName,
                           phoneNumber: reservation.reservationMobile,
-                          time: '${Utils.convertDateAndTime(reservation.reservationTime)} - ${Utils.convertDate(reservation.reservationEndTime)}',
+                          reservation_time: '${Utils.convertDateAndTime(reservation.reservationTime)} - ${Utils.convertDate(reservation.reservationEndTime)}',
                         ),
                         reservation.allBookings,
                       )),
@@ -154,7 +158,6 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
         Expanded(
           child: _buildTextFieldWithIcon(dateController, 'Date', Icons.calendar_today, () => _selectDate(context)),
         ),
-
       ],
     );
   }
@@ -217,10 +220,10 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
             Text(tableInfo, style: TextStyle(color: Colors.white, fontSize: 16)),
             if (details != null) ...[
               SizedBox(height: 10),
-              Text('ID: ${details.id}', style: TextStyle(color: Colors.white)),
+              Text('Reservation Number: ${details.reservation_number}', style: TextStyle(color: Colors.white)),
               Text('Name: ${details.name}', style: TextStyle(color: Colors.white)),
               Text('Phone: ${details.phoneNumber}', style: TextStyle(color: Colors.white)),
-              Text('Time: ${Utils.convertDate(details.time)}', style: TextStyle(color: Colors.white)),
+              Text('Booking Date Time: ${details.reservation_time}', style: TextStyle(color: Colors.white)),
             ],
             SizedBox(height: 10),
             Center(
@@ -263,14 +266,14 @@ class _AlibonTableStatusState extends State<AlibonTableStatus> {
               itemBuilder: (BuildContext context, int index) {
                 final booking = bookings[index];
                 return ListTile(
+                  title: Text('Reservation Details'),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Reservation Details',style: (TextStyle(fontWeight: FontWeight.w600)),),
-                      SizedBox(height: 10),
-                      Text('${booking.firstName} ${booking.lastName}'),
-                      Text('Booking Date Time: ${Utils.convertDate(booking.time)}'),
-                      Text('Reservation Date Time: ${Utils.convertDate(booking.endTime)}'),
+                      Text('Name : ${booking.firstName} ${booking.lastName}'),
+                      Text('Reservation Number : ${booking.reservation_number}'),
+                      Text('Reservation Date Time: ${booking.date} ${Utils.convertDate(booking.time)}'),
+                      //   Text(' Date Time: ${Utils.convertDate(booking.endTime)}'),
                       Text('Persons: ${booking.noOffPerson}'),
                     ],
                   ),
@@ -342,7 +345,6 @@ class Booking {
   final String endTime;
   final int noOffPerson;
   final String date;
-  final String mobile;
   final String reservation_number;
 
   Booking({
@@ -352,7 +354,6 @@ class Booking {
     required this.endTime,
     required this.noOffPerson,
     required this.date,
-    required this.mobile,
     required this.reservation_number,
   });
 
@@ -364,22 +365,21 @@ class Booking {
       endTime: json['end_time'],
       noOffPerson: json['no_off_person'],
       date: json['date'],
-      mobile: json['mobile'],
       reservation_number: json['reservation_number'],
     );
   }
 }
 
 class ReservationDetails {
-  final String id;
+  final String reservation_number;
   final String name;
   final String phoneNumber;
-  final String time;
+  final String reservation_time;
 
   ReservationDetails({
-    required this.id,
+    required this.reservation_number,
     required this.name,
     required this.phoneNumber,
-    required this.time,
+    required this.reservation_time,
   });
 }
