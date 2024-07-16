@@ -166,6 +166,7 @@ class _NoShowDataState extends State<NoShowData> {
               SizedBox(height: 5),
               _buildDetailRow('Remark', noShow['no_show_remark'] ?? 'NA'),
             ],
+            
           ),
         );
       },
