@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:html/parser.dart' show parse;
 import 'package:rms/screens/AlibonTableStatus.dart';
 import 'package:rms/screens/AssignTable.dart';
 import 'package:rms/screens/Billing.dart';
@@ -14,12 +15,10 @@ import 'package:rms/screens/LoginPage.dart';
 import 'package:rms/screens/NoShowData.dart';
 import 'package:rms/screens/ReservationList.dart';
 import 'package:rms/screens/YardTableStatus.dart';
-import 'package:rms/utils/HtmlTableDisplay.dart';
 import 'package:rms/utils/Tint.dart';
 import 'package:rms/utils/Utils.dart';
 
 import '../utils/Constant.dart';
-import 'package:html/parser.dart' show parse;
 
 class ReservationPage extends StatefulWidget {
   @override
@@ -42,6 +41,8 @@ class _ReservationPageState extends State<ReservationPage> {
   TextEditingController referance = TextEditingController();
   bool referenceVisiblity=false;
   List<TableRow> rows=[];
+  bool bookingHistory=false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -202,6 +203,54 @@ class _ReservationPageState extends State<ReservationPage> {
                     _buildTextField(_firstNameController, 'First Name'),
                     SizedBox(height: 20),
                     _buildTextField(_lastNameController, 'Last Name'),
+                    SizedBox(height:4),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 3),
+                      child: GestureDetector(
+                        onTap: (){
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Previous Bookings'),
+                                contentPadding: EdgeInsets.zero, // Remove default padding
+                                content: SingleChildScrollView(
+                                  child: Table(
+                                    border: TableBorder.all(), // Add border to the table (optional)
+                                    children: rows,
+                                  ),
+                                ),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: Text('Close'),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                  ),
+                                ],
+                              );
+
+                            },
+                          );
+                        },
+                        child: Visibility(
+                          visible: bookingHistory,
+                          child: Text(
+                            'View Previous Bookings',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'Gilroy',
+                              fontSize: 12,
+                              decoration: TextDecoration.underline,
+                              decorationColor: Colors.white, // Set underline color to white
+                              decorationThickness: 1.5, // Optional: Adjust thickness of underline
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+
+
                     SizedBox(height: 20),
                     _buildTimeDatePicker(),
                     SizedBox(height: 20),
@@ -212,10 +261,6 @@ class _ReservationPageState extends State<ReservationPage> {
                     _buildBookNowButton(),
                     SizedBox(height: 20),
                //     HtmlTableDisplay(htmlData: htmlData)
-                Table(
-                  border: TableBorder.all(), // Add border to the table (optional)
-                  children: rows,
-                ),
 
 
                   ],
@@ -355,8 +400,12 @@ class _ReservationPageState extends State<ReservationPage> {
   Widget _buildMobileFieldList(TextEditingController controller, String hintText) {
     controller.addListener(() {
       if (controller.text.length == 10) {
-       previosData(context,controller.text);
+        bookingHistory=true;
 
+        previosData(context,controller.text);
+
+      }else{
+        bookingHistory=false;
       }
     });
 
@@ -448,20 +497,24 @@ class _ReservationPageState extends State<ReservationPage> {
                   Icon(Icons.access_time, color: Colors.white),
                   SizedBox(width: 8),
                   Expanded(
-                    child: TextField(
-                      controller: _timeController,
-                      cursorColor: Color(0xFFeb3254),
-                      style:
-                          TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        hintText: 'Time',
-                        hintStyle: TextStyle(
+                    child: IgnorePointer(
+                      child: TextField(
+                        controller: _timeController,
+                        cursorColor: Color(0xFFeb3254),
+                        style: TextStyle(
                             color: Colors.white, fontFamily: 'Gilroy'),
-                        border: InputBorder.none,
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.transparent,
+                          hintText: 'Time',
+                          hintStyle: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Gilroy',
+                          ),
+                          border: InputBorder.none,
+                        ),
+                        readOnly: true,
                       ),
-                      readOnly: true,
                     ),
                   ),
                 ],
@@ -521,21 +574,24 @@ class _ReservationPageState extends State<ReservationPage> {
                   Icon(Icons.date_range, color: Colors.white),
                   SizedBox(width: 8),
                   Expanded(
-                    child: TextField(
-                      controller: _dateController,
-                      cursorColor: Color(0xFFeb3254),
-                      style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: Colors.transparent,
-                        hintText: 'Date',
-                        hintStyle: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'Gilroy',
+                    child: IgnorePointer(
+                      child: TextField(
+                        controller: _dateController,
+                        cursorColor: Color(0xFFeb3254),
+                        style: TextStyle(
+                            color: Colors.white, fontFamily: 'Gilroy'),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: Colors.transparent,
+                          hintText: 'Date',
+                          hintStyle: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'Gilroy',
+                          ),
+                          border: InputBorder.none,
                         ),
-                        border: InputBorder.none,
+                        readOnly: true,
                       ),
-                      readOnly: true,
                     ),
                   ),
                 ],
@@ -543,10 +599,10 @@ class _ReservationPageState extends State<ReservationPage> {
             ),
           ),
         ),
-
       ],
     );
   }
+
   Widget _buildDiscountDropdown() {
     return DropdownButtonFormField<String>(
       style: TextStyle(color: Colors.pink, fontFamily: 'Gilroy'),
@@ -812,6 +868,7 @@ class _ReservationPageState extends State<ReservationPage> {
         int status = responseObject['status'];
         String message = responseObject['message'];
 
+///        bookingHistory=false
 
         if (status == 200) {
 
@@ -819,6 +876,20 @@ class _ReservationPageState extends State<ReservationPage> {
           _firstNameController.text=responseObject['first_name'];
           _lastNameController.text=responseObject['last_name'];
           rows = _parseHtmlToTableRows(htmlData);
+
+
+            if(htmlData.isEmpty){
+           //   print("data is empty");
+            //  print("gsdfvdfvfd");
+              bookingHistory=false;
+            }else {
+              //  print("data is full");
+              //  print("gsdfvdfvfd");
+              bookingHistory = true;
+            }
+
+
+
           setState(() {
 
 
@@ -840,6 +911,7 @@ class _ReservationPageState extends State<ReservationPage> {
     }
   }
 
+
   List<TableRow> _parseHtmlToTableRows(String htmlData) {
     var document = parse(htmlData);
     var rows = document.getElementsByTagName('tr');
@@ -857,9 +929,10 @@ class _ReservationPageState extends State<ReservationPage> {
         children: cells.map((cell) {
           return Container(
             padding: const EdgeInsets.all(8.0),
+            width: MediaQuery.of(context).size.width * 0.25, // Adjust width as needed
             child: Text(
               cell.text.trim(),
-              style: TextStyle(fontSize: 14, color: Colors.white), // White text
+              style: TextStyle(fontSize: 12, color: Colors.black), // Black text
             ),
           );
         }).toList(),
@@ -871,6 +944,7 @@ class _ReservationPageState extends State<ReservationPage> {
   Future<void> initiate() async {
     email = (await Utils.getStringFromPrefs(Constant.user_id))!;
     password = (await Utils.getStringFromPrefs(Constant.api_token))!;
+    _dateController.text = Utils.getCurrentFormattedDate();
 
     print(email+"check1");
     print(password);

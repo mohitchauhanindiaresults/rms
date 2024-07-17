@@ -258,8 +258,7 @@ class _ReservationListState extends State<ReservationList> {
                                   data: ThemeData.light().copyWith(
                                     primaryColor: Color(0xFFeb3254),
                                     backgroundColor: Color(0xFFeb3254),
-                                    colorScheme: ColorScheme.light(
-                                        primary: Color(0xFFeb3254)),
+                                    colorScheme: ColorScheme.light(primary: Color(0xFFeb3254)),
                                     buttonTheme: ButtonThemeData(
                                       textTheme: ButtonTextTheme.primary,
                                     ),
@@ -271,7 +270,7 @@ class _ReservationListState extends State<ReservationList> {
                             if (pickedDate != null) {
                               setState(() {
                                 _dateController.text =
-                                    "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+                                "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
                                 selectedDate = _dateController.text;
                                 fetchReservations();
                                 print("Selected date: ${_dateController.text}");
@@ -290,23 +289,23 @@ class _ReservationListState extends State<ReservationList> {
                                 Icon(Icons.date_range, color: Colors.white),
                                 SizedBox(width: 8),
                                 Expanded(
-                                  child: TextField(
-                                    controller: _dateController,
-                                    cursorColor: Color(0xFFeb3254),
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontFamily: 'Gilroy'),
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: Colors.transparent,
-                                      hintText: selectedDate,
-                                      hintStyle: TextStyle(
-                                        color: Colors.white,
-                                        fontFamily: 'Gilroy',
+                                  child: IgnorePointer(
+                                    child: TextField(
+                                      controller: _dateController,
+                                      cursorColor: Color(0xFFeb3254),
+                                      style: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.transparent,
+                                        hintText: selectedDate,
+                                        hintStyle: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Gilroy',
+                                        ),
+                                        border: InputBorder.none,
                                       ),
-                                      border: InputBorder.none,
+                                      readOnly: true,
                                     ),
-                                    readOnly: true,
                                   ),
                                 ),
                               ],
@@ -314,6 +313,7 @@ class _ReservationListState extends State<ReservationList> {
                           ),
                         ),
                       ),
+
                     ],
                   ),
                   SizedBox(height: 10),

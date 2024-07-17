@@ -178,8 +178,7 @@ class _AssignTableState extends State<AssignTable> {
                                   data: ThemeData.light().copyWith(
                                     primaryColor: Colors.pink,
                                     backgroundColor: Colors.pink,
-                                    colorScheme:
-                                        ColorScheme.light(primary: Colors.pink),
+                                    colorScheme: ColorScheme.light(primary: Colors.pink),
                                     buttonTheme: ButtonThemeData(
                                       textTheme: ButtonTextTheme.primary,
                                     ),
@@ -191,7 +190,7 @@ class _AssignTableState extends State<AssignTable> {
                             if (pickedDate != null) {
                               setState(() {
                                 _dateController.text =
-                                    "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
+                                "${pickedDate.year}-${pickedDate.month}-${pickedDate.day}";
                                 selectedDate = _dateController.text;
                                 fetchReservations();
                               });
@@ -209,23 +208,26 @@ class _AssignTableState extends State<AssignTable> {
                                 Icon(Icons.date_range, color: Colors.white),
                                 SizedBox(width: 8),
                                 Expanded(
-                                  child: TextField(
-                                    controller: _dateController,
-                                    cursorColor: Colors.pink,
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontFamily: 'Gilroy'),
-                                    decoration: InputDecoration(
-                                      filled: true,
-                                      fillColor: Colors.transparent,
-                                      hintText: selectedDate,
-                                      hintStyle: TextStyle(
+                                  child: IgnorePointer(
+                                    child: TextField(
+                                      controller: _dateController,
+                                      cursorColor: Colors.pink,
+                                      style: TextStyle(
                                         color: Colors.white,
                                         fontFamily: 'Gilroy',
                                       ),
-                                      border: InputBorder.none,
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: Colors.transparent,
+                                        hintText: selectedDate,
+                                        hintStyle: TextStyle(
+                                          color: Colors.white,
+                                          fontFamily: 'Gilroy',
+                                        ),
+                                        border: InputBorder.none,
+                                      ),
+                                      readOnly: true,
                                     ),
-                                    readOnly: true,
                                   ),
                                 ),
                               ],

@@ -270,8 +270,13 @@ import 'dart:io';
     }
 
   Future<void> initiate() async {
-      email.text=(await Utils.getStringFromPrefs(Constant.email))!;
-      password.text=(await Utils.getStringFromPrefs(Constant.password))!;
+      try{
+        email.text=(await Utils.getStringFromPrefs(Constant.email))!;
+        password.text=(await Utils.getStringFromPrefs(Constant.password))!;
+      }catch(Exception ){
+        print(Exception);
+      }
+
   }
   
   }
