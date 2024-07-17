@@ -623,7 +623,9 @@ class _ReservationPageState extends State<ReservationPage> {
         '40%',
         '45%',
         '50%',
-        'NC'
+        'NC',
+        'EO',
+        'Imperial Club'
       ].map((String value) {
         return DropdownMenuItem<String>(
           value: value,
