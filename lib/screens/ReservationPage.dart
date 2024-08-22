@@ -42,6 +42,9 @@ class _ReservationPageState extends State<ReservationPage> {
   bool referenceVisiblity=false;
   List<TableRow> rows=[];
   bool bookingHistory=false;
+  int lastStatus=0;
+  Timer? _debounceTimer;
+  bool _isCooldown = false;
 
   @override
   void initState() {
@@ -403,6 +406,10 @@ class _ReservationPageState extends State<ReservationPage> {
         bookingHistory=true;
 
         previosData(context,controller.text);
+
+        setState(() {
+        });
+
 
       }else{
         bookingHistory=false;
@@ -833,7 +840,18 @@ class _ReservationPageState extends State<ReservationPage> {
     }
   }
 
-  Future<void> previosData(BuildContext context,Mobile) async {
+  Future<void> previosData(BuildContext context, String mobile) async {
+    if (_isCooldown) return; // Ignore if cooldown is active
+
+    // Set the cooldown flag
+    _isCooldown = true;
+
+    // Start a timer for 5 seconds to reset the cooldown flag
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(Duration(seconds: 3), () {
+      _isCooldown = false;
+    });
+
     try {
       showDialog(
         context: context,
@@ -849,12 +867,11 @@ class _ReservationPageState extends State<ReservationPage> {
         },
       );
 
-
       final Dio dio = Dio();
       final data = {
         "user_id": email,
         "apiToken": password,
-        "mobile": Mobile,
+        "mobile": mobile,
       };
 
       final response = await dio.post(
@@ -870,46 +887,81 @@ class _ReservationPageState extends State<ReservationPage> {
         int status = responseObject['status'];
         String message = responseObject['message'];
 
-///        bookingHistory=false
-
         if (status == 200) {
-
           String htmlData = responseObject['html'];
-          _firstNameController.text=responseObject['first_name'];
-          _lastNameController.text=responseObject['last_name'];
+          _firstNameController.text = responseObject['first_name'];
+          _lastNameController.text = responseObject['last_name'];
+          lastStatus = responseObject['last_status'];
+
           rows = _parseHtmlToTableRows(htmlData);
 
-
-            if(htmlData.isEmpty){
-           //   print("data is empty");
+          if(htmlData.isEmpty){
+            //   print("data is empty");
             //  print("gsdfvdfvfd");
-              bookingHistory=false;
-            }else {
-              //  print("data is full");
-              //  print("gsdfvdfvfd");
-              bookingHistory = true;
-            }
-
-
-
-          setState(() {
-
-
-          });
-
-        }else if(status==0){
+            bookingHistory=false;
+          }else {
+            //  print("data is full");
+            //  print("gsdfvdfvfd");
+            bookingHistory = true;
+          }
+          checkBookingStatus(lastStatus);
+        } else if (status == 0) {
           Fluttertoast.showToast(msg: message);
           Utils.navigateToPage(context, LoginPage());
         } else {
           Fluttertoast.showToast(msg: "Oops.. Something went wrong!");
         }
       } else {
-        Fluttertoast.showToast(msg: "Oops.. Something went wrong!111");
+        Fluttertoast.showToast(msg: "Oops.. Something went wrong!");
       }
     } catch (e) {
-      Navigator.pop(context);
-      Fluttertoast.showToast(msg: "Oops.. Something went wrong!");
+    //  Navigator.pop(context);
+     // Fluttertoast.showToast(msg: "Oops.. Something went wrong!");
       print("Error: $e");
+    }
+  }
+
+
+
+  void checkBookingStatus(int status) {
+    if (status == 8) {
+      // Show popup for "No show"
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Notice'),
+            content: Text('Your last booking is marked as No show'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else if (status == 9) {
+      // Show popup for "Cancelled"
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Notice'),
+            content: Text('Your last booking is marked as Cancelled'),
+            actions: <Widget>[
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 

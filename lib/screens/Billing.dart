@@ -1,16 +1,17 @@
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
-import 'package:rms/screens/ReservationPage.dart';
 import 'package:rms/utils/Constant.dart';
-import 'dart:convert';
 
 import '../utils/Tint.dart';
 import '../utils/Utils.dart';
 import 'LoginPage.dart';
+import 'ReservationPage.dart';
 
 class Billing extends StatefulWidget {
   @override
@@ -90,7 +91,6 @@ class _BillingState extends State<Billing> {
         Expanded(
           child: _buildTextFieldWithIcon(dateController, 'Date', Icons.calendar_today, () => _selectDate(context)),
         ),
-
       ],
     );
   }
@@ -144,6 +144,9 @@ class _BillingState extends State<Billing> {
         final TextEditingController numberOfPersonsController = TextEditingController();
         final TextEditingController billAmountController = TextEditingController();
 
+        bool isBillComplete =
+            bill['bill_number'] != null && bill['bill_amount'] != null;
+
         return Container(
           margin: EdgeInsets.only(bottom: 10),
           padding: EdgeInsets.all(10),
@@ -172,28 +175,64 @@ class _BillingState extends State<Billing> {
               SizedBox(height: 5),
               _buildDetailRow('Table Info', '${bill['table_number']} - ${bill['table_location'] ?? ''}'),
               SizedBox(height: 10),
-              _buildTextField(numberOfPersonsController, 'Enter Bill Number', TextInputType.number),
-              SizedBox(height: 10),
-              _buildTextField(billAmountController, 'Enter Bill Amount', TextInputType.number),
-              SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  if (numberOfPersonsController.text.isNotEmpty && billAmountController.text.isNotEmpty) {
-                    print('Reservation ID: ${bill['id']}');
-                    print('No of Persons: ${numberOfPersonsController.text}');
-                    print('Bill Amount: ${billAmountController.text}');
-                    _saveBillDetails(bill['id'].toString(),numberOfPersonsController.text,billAmountController.text);
-
-                  } else {
-                    print('Please fill in all fields');
-                    Utils.showAlertDialogError(context, "Alert", "Please fill all details");
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: EdgeInsets.symmetric(vertical: 14.0, horizontal: 24.0),
-                ),
-                child: Text('Submit', style: TextStyle(color: Colors.white, fontFamily: 'Gilroy')),
+              isBillComplete
+                  ? Column(
+                      children: [
+                        _buildDetailRow(
+                            'Bill Number', bill['bill_number'] ?? 'NA'),
+                        SizedBox(height: 5),
+                        _buildDetailRow(
+                            'Bill Amount', bill['bill_amount'] ?? 'NA'),
+                        SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey,
+                            padding: EdgeInsets.symmetric(
+                                vertical: 14.0, horizontal: 24.0),
+                          ),
+                          child: Text('Booking Complete',
+                              style: TextStyle(
+                                  color: Colors.white, fontFamily: 'Gilroy')),
+                        ),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        _buildTextField(numberOfPersonsController,
+                            'Enter Bill Number', TextInputType.number),
+                        SizedBox(height: 10),
+                        _buildTextField(billAmountController,
+                            'Enter Bill Amount', TextInputType.number),
+                        SizedBox(height: 10),
+                        ElevatedButton(
+                          onPressed: () {
+                            if (numberOfPersonsController.text.isNotEmpty &&
+                                billAmountController.text.isNotEmpty) {
+                              print('Reservation ID: ${bill['id']}');
+                              print(
+                                  'No of Persons: ${numberOfPersonsController.text}');
+                              print(
+                                  'Bill Amount: ${billAmountController.text}');
+                              _saveBillDetails(
+                                  bill['id'].toString(),
+                                  numberOfPersonsController.text,
+                                  billAmountController.text);
+                            } else {
+                        print('Please fill in all fields');
+                        Utils.showAlertDialogError(
+                            context, "Alert", "Please fill all details");
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: EdgeInsets.symmetric(
+                          vertical: 14.0, horizontal: 24.0),
+                    ),
+                    child: Text('Submit', style: TextStyle(
+                        color: Colors.white, fontFamily: 'Gilroy')),
+                  ),
+                ],
               ),
             ],
           ),
@@ -210,13 +249,17 @@ class _BillingState extends State<Billing> {
         Text(value, style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
       ],
     );
-  } Widget _buildDetailRowTime(String title, String value) {
-    String formatedvalue =Utils.convertDate(value);
+  }
+
+  Widget _buildDetailRowTime(String title, String value) {
+    String formattedValue = Utils.convertDate(value);
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(title, style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
-        Text(formatedvalue, style: TextStyle(color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
+        Text(formattedValue,
+            style: TextStyle(
+                color: Colors.white, fontFamily: 'Gilroy', fontSize: 14)),
       ],
     );
   }
@@ -225,21 +268,19 @@ class _BillingState extends State<Billing> {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-     //  color: Colors.white.withOpacity(0.5),
         borderRadius: BorderRadius.circular(8),
       ),
-      child:
-      TextField(
+      child: TextField(
         controller: controller,
-        keyboardType: TextInputType.number,
+        keyboardType: keyboardType,
         inputFormatters: <TextInputFormatter>[
           FilteringTextInputFormatter.digitsOnly
         ],
         style: TextStyle(
-          color: Colors.white, // Text color
+          color: Colors.white,
           fontFamily: 'Gilroy',
         ),
-        cursorColor: Colors.white, // Cursor color
+        cursorColor: Colors.white,
         decoration: InputDecoration(
           hintText: hintText,
           hintStyle: TextStyle(color: Colors.white, fontFamily: 'Gilroy'),
@@ -252,7 +293,6 @@ class _BillingState extends State<Billing> {
           contentPadding: EdgeInsets.symmetric(horizontal: 10),
         ),
       ),
-
     );
   }
 
@@ -268,7 +308,8 @@ class _BillingState extends State<Billing> {
 
     if (response.statusCode == 200) {
       final dataa = json.decode(response.body);
-      print(response.body);
+      //   print(response.body);
+      Utils.printLongString(response.body);
       if(dataa['status']==200){
         //   Fluttertoast.showToast(msg: data['message']);
         final List<dynamic> data = json.decode(response.body)['BillListData'];
@@ -287,6 +328,7 @@ class _BillingState extends State<Billing> {
       print('Failed to fetch bill details');
     }
   }
+
   Future<void> _saveBillDetails(String rvID,String number,String amount) async {
     final response = await http.post(
       Uri.parse('https://abc.charumindworks.com/inventory/api/v1/savebill'),
@@ -300,12 +342,13 @@ class _BillingState extends State<Billing> {
     );
 
     if (response.statusCode == 200) {
-
-        Utils.navigateToPage(context, ReservationPage());
+      Fluttertoast.showToast(msg: "Billing Complete");
+      Utils.navigateToPage(context, ReservationPage());
     } else {
       print('Failed to fetch bill details');
     }
   }
+
 
   Future<void> initiate() async {
     userId = (await Utils.getStringFromPrefs(Constant.user_id))!;

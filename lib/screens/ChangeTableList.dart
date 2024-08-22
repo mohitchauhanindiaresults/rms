@@ -307,6 +307,7 @@ class _ChangeTableListState extends State<ChangeTableList> {
       fetchTableData();
     });
   }
+
 }
 
 class ReservationData {
